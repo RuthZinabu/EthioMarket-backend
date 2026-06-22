@@ -1,0 +1,23 @@
+{
+  "name": "eslint-config-emacare",
+  "version": "1.0.0",
+  "description": "ESLint configuration for EmaCAre platform",
+  "extends": [
+    "eslint:recommended"
+  ],
+  "env": {
+    "node": true,
+    "es2020": true
+  },
+  "parser": "@typescript-eslint/parser",
+  "parserOptions": {
+    "ecmaVersion": 2020,
+    "sourceType": "module"
+  },
+  "rules": {
+    "no-console": "warn",
+    "no-unused-vars": "off",
+    "@typescript-eslint/no-unused-vars": ["error", { "argsIgnorePattern": "^_" }],
+    "no-explicit-any": "off"
+  }
+}

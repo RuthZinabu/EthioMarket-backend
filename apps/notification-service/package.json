@@ -1,0 +1,28 @@
+{
+  "name": "@emacare/notification-service",
+  "version": "1.0.0",  "license": "MIT",  "description": "Notification service (Email, SMS) for EmaCAre platform",
+  "main": "dist/index.js",
+  "scripts": {
+"dev": "nodemon --watch src --ext ts --exec \"tsx src/index.ts\"",
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "test": "jest"
+  },
+  "dependencies": {
+    "express": "^4.18.0",
+    "nodemailer": "^6.9.0",
+    "twilio": "^3.83.0",
+    "dotenv": "^16.0.0",
+    "@emacare/shared-utils": "^1.0.0"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.0",
+    "@types/node": "^20.0.0",
+    "@types/nodemailer": "^6.4.0",
+    "typescript": "^5.0.0",
+    "ts-node": "^10.0.0",
+    "jest": "^29.0.0",
+    "@types/jest": "^29.0.0",
+    "ts-jest": "^29.0.0"
+  }
+}

@@ -1,0 +1,205 @@
+version: '3.8'
+
+services:
+  # MongoDB
+  mongodb:
+    image: mongo:6
+    container_name: emacare-mongodb
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: password
+      MONGO_INITDB_DATABASE: emacare
+    ports:
+      - '27017:27017'
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - emacare-network
+
+  # Redis for Cart Service
+  redis:
+    image: redis:7-alpine
+    container_name: emacare-redis
+    ports:
+      - '6379:6379'
+    volumes:
+      - redis_data:/data
+    networks:
+      - emacare-network
+  vault:
+    image: hashicorp/vault:1.15.1
+    container_name: vault
+    cap_add:
+      - IPC_LOCK
+    environment:
+      VAULT_DEV_ROOT_TOKEN_ID: root-token
+    command: server -dev -dev-root-token-id=root-token -dev-listen-address=0.0.0.0:8200
+    ports:
+      - "8203:8200"
+    volumes:
+      - vault_data:/vault/file
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "sh",
+          "-c",
+          "wget --spider -q http://localhost:8200/v1/sys/health || exit 1",
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 15s
+
+  # API Gateway
+  api-gateway:
+    build:
+      context: .
+      dockerfile: apps/api-gateway/Dockerfile
+    container_name: emacare-api-gateway
+    ports:
+      - '3000:3000'
+    environment:
+      PORT: 3000
+      AUTH_SERVICE_URL: http://auth-service:3001
+      PRODUCT_SERVICE_URL: http://product-service:3002
+      ORDER_SERVICE_URL: http://order-service:3003
+      CART_SERVICE_URL: http://cart-service:3004
+      PAYMENT_SERVICE_URL: http://payment-service:3005
+      SHIPPING_SERVICE_URL: http://shipping-service:3006
+      NOTIFICATION_SERVICE_URL: http://notification-service:3007
+    depends_on:
+      - auth-service
+      - product-service
+      - order-service
+      - cart-service
+      - payment-service
+      - shipping-service
+      - notification-service
+    networks:
+      - emacare-network
+
+  # Auth Service
+  auth-service:
+    build:
+      context: .
+      dockerfile: apps/auth-service/Dockerfile
+    container_name: emacare-auth-service
+    ports:
+      - '3001:3001'
+    environment:
+      PORT: 3001
+      JWT_SECRET: ${JWT_SECRET}
+      MONGODB_URI: mongodb://admin:password@mongodb:27017/emacare
+    depends_on:
+      - mongodb
+    networks:
+      - emacare-network
+
+  # Product Service
+  product-service:
+    build:
+      context: .
+      dockerfile: apps/product-service/Dockerfile
+    container_name: emacare-product-service
+    ports:
+      - '3002:3002'
+    environment:
+      PORT: 3002
+      MONGODB_URI: mongodb://admin:password@mongodb:27017/emacare
+    depends_on:
+      - mongodb
+    networks:
+      - emacare-network
+
+  # Order Service
+  order-service:
+    build:
+      context: .
+      dockerfile: apps/order-service/Dockerfile
+    container_name: emacare-order-service
+    ports:
+      - '3003:3003'
+    environment:
+      PORT: 3003
+      MONGODB_URI: mongodb://admin:password@mongodb:27017/emacare
+    depends_on:
+      - mongodb
+    networks:
+      - emacare-network
+
+  # Cart Service
+  cart-service:
+    build:
+      context: .
+      dockerfile: apps/cart-service/Dockerfile
+    container_name: emacare-cart-service
+    ports:
+      - '3004:3004'
+    environment:
+      PORT: 3004
+      REDIS_URL: redis://redis:6379
+    depends_on:
+      - redis
+    networks:
+      - emacare-network
+
+  # Payment Service
+  payment-service:
+    build:
+      context: .
+      dockerfile: apps/payment-service/Dockerfile
+    container_name: emacare-payment-service
+    ports:
+      - '3005:3005'
+    environment:
+      PORT: 3005
+      MONGODB_URI: mongodb://admin:password@mongodb:27017/emacare
+      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY}
+    depends_on:
+      - mongodb
+    networks:
+      - emacare-network
+
+  # Shipping Service
+  shipping-service:
+    build:
+      context: .
+      dockerfile: apps/shipping-service/Dockerfile
+    container_name: emacare-shipping-service
+    ports:
+      - '3006:3006'
+    environment:
+      PORT: 3006
+      MONGODB_URI: mongodb://admin:password@mongodb:27017/emacare
+      DHL_API_KEY: ${DHL_API_KEY}
+    depends_on:
+      - mongodb
+    networks:
+      - emacare-network
+
+  # Notification Service
+  notification-service:
+    build:
+      context: .
+      dockerfile: apps/notification-service/Dockerfile
+    container_name: emacare-notification-service
+    ports:
+      - '3007:3007'
+    environment:
+      PORT: 3007
+      EMAIL_USER: ${EMAIL_USER}
+      EMAIL_PASSWORD: ${EMAIL_PASSWORD}
+      TWILIO_ACCOUNT_SID: ${TWILIO_ACCOUNT_SID}
+      TWILIO_AUTH_TOKEN: ${TWILIO_AUTH_TOKEN}
+    networks:
+      - emacare-network
+
+volumes:
+  mongodb_data:
+  redis_data:
+  vault_data:
+
+networks:
+  emacare-network:
+    driver: bridge

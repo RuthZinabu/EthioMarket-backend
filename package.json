@@ -1,0 +1,33 @@
+{
+  "name": "emacare-platform",
+  "version": "1.0.0",
+  "description": "EmaCAre - E-commerce platform for selling Habesha products to diaspora communities",
+  "private": true,
+  "license": "MIT",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "concurrently \"yarn workspace @emacare/api-gateway dev\" \"yarn workspace @emacare/auth-service dev\" \"yarn workspace @emacare/product-service dev\" \"yarn workspace @emacare/order-service dev\" \"yarn workspace @emacare/cart-service dev\" \"yarn workspace @emacare/payment-service dev\" \"yarn workspace @emacare/shipping-service dev\" \"yarn workspace @emacare/notification-service dev\"",
+    "build": "yarn workspace @emacare/shared-utils build && yarn workspace @emacare/api-gateway build && yarn workspace @emacare/auth-service build && yarn workspace @emacare/product-service build && yarn workspace @emacare/order-service build && yarn workspace @emacare/cart-service build && yarn workspace @emacare/payment-service build && yarn workspace @emacare/shipping-service build && yarn workspace @emacare/notification-service build",
+    "test": "echo 'Tests running...'",
+    "lint": "echo 'Linting...'",
+    "start": "yarn workspace @emacare/api-gateway start"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.19",
+    "@types/express-http-proxy": "^1.6.7",
+    "@types/node-vault": "^0.9.1",
+    "@types/winston": "^2.4.4",
+    "concurrently": "^8.2.0",
+    "tsx": "^4.22.4",
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "http-proxy-middleware": "2",
+    "node-vault": "^0.12.0",
+    "winston": "^3.19.0",
+    "zod": "^4.4.3"
+  }
+}
