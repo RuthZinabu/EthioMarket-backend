@@ -1,11 +1,6 @@
 import type { Request, Response } from 'express';
 import { errorHandler, successResponse } from '@emacare/shared-utils';
-
-interface CartItem {
-  productId: string;
-  quantity: number;
-  price: number;
-}
+import { CartItem } from '../types/cart.types';
 
 type Cart = { items: CartItem[]; total: number };
 
