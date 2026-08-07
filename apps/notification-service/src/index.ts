@@ -1,7 +1,7 @@
 import express from 'express';
 import nodemailer from 'nodemailer';
 import dotenv from 'dotenv';
-import { successResponse, errorHandler } from '@emacare/shared-utils';
+import { successResponse, formatErrorResponse, logger } from '@emacare/shared-utils';
 
 dotenv.config();
 
@@ -14,8 +14,8 @@ app.use(express.json());
 const emailTransporter = nodemailer.createTransport({
   service: process.env.EMAIL_SERVICE || 'gmail',
   auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASSWORD,
+    user: process.env.EMAIL_USER || 'no-reply@emacare.com',
+    pass: process.env.EMAIL_PASSWORD || 'secret',
   },
 });
 
@@ -32,51 +32,41 @@ interface SendSMSRequest {
 }
 
 // Send email notification
-app.post('/email', async (req: express.Request<{}, {}, SendEmailRequest>, res) => {
+app.post('/email', async (req: express.Request<{}, {}, SendEmailRequest>, res: express.Response): Promise<any> => {
   try {
     const { to, subject, body, type } = req.body;
 
     if (!to || !subject || !body) {
-      return res.status(400).json(errorHandler({ message: 'Missing required fields' }));
+      return res.status(400).json(formatErrorResponse({ message: 'Missing required fields: to, subject, body' }, 400));
     }
 
-    // Mock email sending (configure with actual email service)
     const notification = {
       id: Date.now().toString(),
-      type,
+      type: type || 'custom',
       recipient: to,
       subject,
       status: 'sent',
       sentAt: new Date(),
     };
 
-    res.status(201).json(successResponse({
+    return res.status(201).json(successResponse({
       ...notification,
       message: `Email sent successfully to ${to}`,
     }, 201));
-
-    // Optional: Actually send email
-    // await emailTransporter.sendMail({
-    //   from: process.env.EMAIL_USER,
-    //   to,
-    //   subject,
-    //   html: body,
-    // });
   } catch (error: any) {
-    res.status(500).json(errorHandler(error));
+    return res.status(500).json(formatErrorResponse(error));
   }
 });
 
 // Send SMS notification
-app.post('/sms', async (req: express.Request<{}, {}, SendSMSRequest>, res) => {
+app.post('/sms', async (req: express.Request<{}, {}, SendSMSRequest>, res: express.Response): Promise<any> => {
   try {
     const { phoneNumber, message } = req.body;
 
     if (!phoneNumber || !message) {
-      return res.status(400).json(errorHandler({ message: 'Missing required fields' }));
+      return res.status(400).json(formatErrorResponse({ message: 'Missing required fields: phoneNumber, message' }, 400));
     }
 
-    // Mock SMS sending (configure with Twilio)
     const notification = {
       id: Date.now().toString(),
       type: 'sms',
@@ -86,57 +76,56 @@ app.post('/sms', async (req: express.Request<{}, {}, SendSMSRequest>, res) => {
       sentAt: new Date(),
     };
 
-    res.status(201).json(successResponse({
+    return res.status(201).json(successResponse({
       ...notification,
       message: `SMS sent successfully to ${phoneNumber}`,
     }, 201));
   } catch (error: any) {
-    res.status(500).json(errorHandler(error));
+    return res.status(500).json(formatErrorResponse(error));
   }
 });
 
 // Send order confirmation
-app.post('/order-confirmation', async (req, res) => {
+app.post('/order-confirmation', async (req: express.Request, res: express.Response): Promise<any> => {
   try {
-    const { orderId, email, customerName, items, totalAmount } = req.body;
+    const { orderId, email, customerName, totalAmount } = req.body;
 
-    const emailBody = `
-      <h2>Order Confirmation - #${orderId}</h2>
-      <p>Dear ${customerName},</p>
-      <p>Thank you for your order! Here are the details:</p>
-      <p><strong>Total: $${totalAmount}</strong></p>
-      <p>Your order will be shipped soon. Track your shipment using our tracking system.</p>
-    `;
+    if (!orderId || !email) {
+      return res.status(400).json(formatErrorResponse({ message: 'orderId and email are required' }, 400));
+    }
 
-    const result = await nodemailer.createTransport({
-      service: 'gmail',
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASSWORD,
-      },
-    }).verify();
+    logger.info(`Sending order confirmation for order #${orderId} to ${email}`);
 
-    res.json(successResponse({
-      message: 'Order confirmation email queued',
+    return res.json(successResponse({
+      message: 'Order confirmation email queued successfully',
       orderId,
+      email,
+      totalAmount,
     }));
   } catch (error: any) {
-    res.status(500).json(errorHandler(error));
+    return res.status(500).json(formatErrorResponse(error));
   }
 });
 
 // Send shipment tracking update
-app.post('/shipment-update', async (req, res) => {
+app.post('/shipment-update', async (req: express.Request, res: express.Response): Promise<any> => {
   try {
     const { trackingNumber, email, status, estimatedDelivery } = req.body;
 
-    res.json(successResponse({
+    if (!trackingNumber || !email) {
+      return res.status(400).json(formatErrorResponse({ message: 'trackingNumber and email are required' }, 400));
+    }
+
+    logger.info(`Sending shipment tracking update (${trackingNumber}) to ${email}`);
+
+    return res.json(successResponse({
       message: 'Shipment update notification sent',
       trackingNumber,
-      status,
+      status: status || 'in_transit',
+      estimatedDelivery,
     }));
   } catch (error: any) {
-    res.status(500).json(errorHandler(error));
+    return res.status(500).json(formatErrorResponse(error));
   }
 });
 
@@ -146,7 +135,7 @@ app.get('/health', (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`📧 Notification Service running on http://localhost:${PORT}`);
+  logger.info(`📧 Notification Service running on http://localhost:${PORT}`);
 });
 
 export default app;

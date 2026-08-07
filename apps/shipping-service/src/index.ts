@@ -1,21 +1,16 @@
 import express from 'express';
 import dotenv from 'dotenv';
-import { successResponse, errorHandler } from '@emacare/shared-utils';
-import axios from 'axios';
+import mongoose from 'mongoose';
+import { successResponse, formatErrorResponse, logger } from '@emacare/shared-utils';
+import { ShipmentModel } from '@emacare/mongo/models';
 
 dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3006;
+const MONGO_URL = process.env.MONGO_DB_URL || 'mongodb://localhost:27017/emacare';
 
 app.use(express.json());
-
-// Mock shipments database
-const shipments: any[] = [];
-
-// DHL API Integration (mock configuration)
-const DHL_API_URL = process.env.DHL_API_URL || 'https://apis-sandbox.dhl.com';
-const DHL_API_KEY = process.env.DHL_API_KEY || 'your-dhl-api-key';
 
 interface CreateShipmentRequest {
   orderId: string;
@@ -23,66 +18,62 @@ interface CreateShipmentRequest {
   recipientAddress: string;
   recipientCity: string;
   recipientCountry: string;
-  weight: number;
-  items: Array<{ description: string; quantity: number; value: number }>;
+  weight?: number;
 }
 
 // Create shipment
-app.post('/', async (req: express.Request<{}, {}, CreateShipmentRequest>, res) => {
+app.post('/', async (req: express.Request<{}, {}, CreateShipmentRequest>, res: express.Response): Promise<any> => {
   try {
-    const { orderId, recipientName, recipientAddress, recipientCity, recipientCountry, weight, items } = req.body;
+    const { orderId, recipientName, recipientAddress, recipientCity, recipientCountry, weight } = req.body;
 
     if (!orderId || !recipientName || !recipientAddress) {
-      return res.status(400).json(errorHandler({ message: 'Missing required fields' }));
+      return res.status(400).json(formatErrorResponse({ message: 'Missing required fields: orderId, recipientName, recipientAddress' }, 400));
     }
 
-    // Mock DHL shipment creation
-    const shipment = {
-      id: Date.now().toString(),
+    const trackingNumber = `DHL${Date.now()}${Math.floor(Math.random() * 1000)}`;
+
+    const shipment = await ShipmentModel.create({
       orderId,
       carrier: 'DHL',
-      trackingNumber: `${Date.now()}`,
+      trackingNumber,
       recipient: {
         name: recipientName,
         address: recipientAddress,
-        city: recipientCity,
-        country: recipientCountry,
+        city: recipientCity || 'Addis Ababa',
+        country: recipientCountry || 'Ethiopia',
       },
-      weight,
-      items,
+      weight: weight || 1.0,
       status: 'picked_up',
-      estimatedDelivery: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
-      createdAt: new Date(),
+      estimatedDelivery: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
       updates: [
         {
           status: 'picked_up',
+          location: 'Origin Sorting Hub',
           timestamp: new Date(),
-          location: 'Pickup location',
+          description: 'Shipment picked up by DHL',
         },
       ],
-    };
+    });
 
-    shipments.push(shipment);
-
-    res.status(201).json(successResponse({
-      ...shipment,
+    return res.status(201).json(successResponse({
+      ...shipment.toObject(),
       message: 'Shipment created successfully with DHL',
     }, 201));
   } catch (error: any) {
-    res.status(500).json(errorHandler(error));
+    return res.status(500).json(formatErrorResponse(error));
   }
 });
 
 // Get shipment tracking
-app.get('/track/:trackingNumber', (req, res) => {
+app.get('/track/:trackingNumber', async (req: express.Request, res: express.Response): Promise<any> => {
   try {
-    const shipment = shipments.find(s => s.trackingNumber === req.params.trackingNumber);
+    const shipment = await ShipmentModel.findOne({ trackingNumber: req.params.trackingNumber });
 
     if (!shipment) {
-      return res.status(404).json(errorHandler({ message: 'Shipment not found' }));
+      return res.status(404).json(formatErrorResponse({ message: 'Shipment not found' }, 404));
     }
 
-    res.json(successResponse({
+    return res.json(successResponse({
       trackingNumber: shipment.trackingNumber,
       carrier: shipment.carrier,
       status: shipment.status,
@@ -90,45 +81,54 @@ app.get('/track/:trackingNumber', (req, res) => {
       updates: shipment.updates,
     }));
   } catch (error: any) {
-    res.status(500).json(errorHandler(error));
+    return res.status(500).json(formatErrorResponse(error));
   }
 });
 
 // Get shipment by order
-app.get('/order/:orderId', (req, res) => {
+app.get('/order/:orderId', async (req: express.Request, res: express.Response): Promise<any> => {
   try {
-    const shipment = shipments.find(s => s.orderId === req.params.orderId);
+    const shipment = await ShipmentModel.findOne({ orderId: req.params.orderId });
 
     if (!shipment) {
-      return res.status(404).json(errorHandler({ message: 'Shipment not found' }));
+      return res.status(404).json(formatErrorResponse({ message: 'Shipment not found' }, 404));
     }
 
-    res.json(successResponse(shipment));
+    return res.json(successResponse(shipment));
   } catch (error: any) {
-    res.status(500).json(errorHandler(error));
+    return res.status(500).json(formatErrorResponse(error));
   }
 });
 
 // Update shipment status
-app.patch('/:id/status', (req, res) => {
+app.patch('/:id/status', async (req: express.Request, res: express.Response): Promise<any> => {
   try {
-    const shipment = shipments.find(s => s.id === req.params.id);
+    const { status, location, description } = req.body;
+    const { id } = req.params;
 
-    if (!shipment) {
-      return res.status(404).json(errorHandler({ message: 'Shipment not found' }));
+    let shipment: any = null;
+    if (mongoose.Types.ObjectId.isValid(id)) {
+      shipment = await ShipmentModel.findById(id);
+    } else {
+      shipment = await ShipmentModel.findOne({ trackingNumber: id });
     }
 
-    const { status, location } = req.body;
+    if (!shipment) {
+      return res.status(404).json(formatErrorResponse({ message: 'Shipment not found' }, 404));
+    }
+
     shipment.status = status;
     shipment.updates.push({
       status,
+      location: location || 'Transit Hub',
       timestamp: new Date(),
-      location: location || 'Unknown',
+      description: description || `Status updated to ${status}`,
     });
 
-    res.json(successResponse(shipment));
+    await shipment.save();
+    return res.json(successResponse(shipment));
   } catch (error: any) {
-    res.status(500).json(errorHandler(error));
+    return res.status(500).json(formatErrorResponse(error));
   }
 });
 
@@ -137,9 +137,19 @@ app.get('/health', (req, res) => {
   res.json({ status: 'Shipping Service is running', dhlIntegration: 'configured' });
 });
 
-app.listen(PORT, () => {
-  console.log(`🚚 Shipping Service running on http://localhost:${PORT}`);
-  console.log('DHL Integration configured');
-});
+async function startServer() {
+  try {
+    await mongoose.connect(MONGO_URL);
+    logger.info('Connected to MongoDB for Shipping Service');
+  } catch (err) {
+    logger.warn('Could not connect to MongoDB for Shipping Service', err);
+  }
+
+  app.listen(PORT, () => {
+    logger.info(`🚚 Shipping Service running on http://localhost:${PORT}`);
+  });
+}
+
+startServer();
 
 export default app;

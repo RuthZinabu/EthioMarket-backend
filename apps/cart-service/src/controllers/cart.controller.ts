@@ -1,86 +1,140 @@
-import type { Request, Response } from 'express';
-import { errorHandler, successResponse } from '@emacare/shared-utils';
-import { CartItem } from '../types/cart.types';
-
-type Cart = { items: CartItem[]; total: number };
-
-// In-memory storage (replace with Redis/db later)
-const carts: Map<string, Cart> = new Map();
+import type { Request, Response } from "express";
+import { formatErrorResponse, successResponse } from "@emacare/shared-utils";
+import { CartModel } from "@emacare/mongo/models";
 
 export function healthCheck(_req: Request, res: Response) {
-  res.status(200).json({ status: 200, message: 'Cart microservice service is active' });
+  res.status(200).json({ status: 200, message: "Cart microservice is active" });
 }
 
-export function getCart(req: Request<{ userId: string }>, res: Response) {
-  try {
-    const cart = carts.get(req.params.userId) || { items: [], total: 0 };
-    return res.json(successResponse(cart));
-  } catch (err) {
-    return res.status(500).json(errorHandler(err));
-  }
-}
-
-export function addItem(
-  req: Request<{ userId: string }, {}, CartItem>,
-  res: Response,
-) {
+export async function getCart(req: Request, res: Response) {
   try {
     const { userId } = req.params;
-    const { productId, quantity, price } = req.body;
-
-    let cart = carts.get(userId);
-    if (!cart) cart = { items: [], total: 0 };
-
-    const existing = cart.items.find((i) => i.productId === productId);
-    if (existing) {
-      existing.quantity += quantity;
-    } else {
-      cart.items.push({ productId, quantity, price });
-    }
-
-    cart.total = cart.items.reduce((sum, i) => sum + i.price * i.quantity, 0);
-    carts.set(userId, cart);
-
-    return res.json(successResponse(cart));
-  } catch (err) {
-    return res.status(500).json(errorHandler(err));
-  }
-}
-
-export function removeItem(
-  req: Request<{ userId: string; productId: string }>,
-  res: Response,
-) {
-  try {
-    const cart = carts.get(req.params.userId);
+    let cart = await CartModel.findOne({ userId });
     if (!cart) {
-      return res.status(404).json(errorHandler({ message: 'Cart not found' }));
+      cart = await CartModel.create({
+        userId,
+        items: [],
+        totalPrice: 0,
+        totalQuantity: 0,
+      });
     }
-
-    cart.items = cart.items.filter((i) => i.productId !== req.params.productId);
-    cart.total = cart.items.reduce((sum, i) => sum + i.price * i.quantity, 0);
-
-    carts.set(req.params.userId, cart);
     return res.json(successResponse(cart));
-  } catch (err) {
-    return res.status(500).json(errorHandler(err));
+  } catch (error) {
+    return res.status(500).json(formatErrorResponse(error));
   }
 }
 
-export function clearCart(req: Request<{ userId: string }>, res: Response) {
+export async function addToCart(req: Request, res: Response) {
   try {
-    carts.delete(req.params.userId);
-    return res.json(successResponse({ message: 'Cart cleared' }));
-  } catch (err) {
-    return res.status(500).json(errorHandler(err));
+    const { userId } = req.params;
+    const { productId, name, price, quantity = 1, image } = req.body;
+
+    if (!productId || !name || typeof price !== "number") {
+      return res.status(400).json(formatErrorResponse({ message: "productId, name, and numeric price are required" }, 400));
+    }
+
+    let cart = await CartModel.findOne({ userId });
+    if (!cart) {
+      cart = new CartModel({
+        userId,
+        items: [],
+        totalPrice: 0,
+        totalQuantity: 0,
+      });
+    }
+
+    const existingIndex = cart.items.findIndex(item => item.productId === productId);
+    if (existingIndex > -1) {
+      cart.items[existingIndex].quantity += quantity;
+    } else {
+      cart.items.push({ productId, name, price, quantity, image });
+    }
+
+    cart.totalQuantity = cart.items.reduce((sum, item) => sum + item.quantity, 0);
+    cart.totalPrice = cart.items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+
+    await cart.save();
+    return res.status(200).json(successResponse(cart));
+  } catch (error) {
+    return res.status(500).json(formatErrorResponse(error));
+  }
+}
+
+export async function updateItemQuantity(req: Request, res: Response) {
+  try {
+    const { userId, productId } = req.params;
+    const { quantity } = req.body;
+
+    if (typeof quantity !== "number" || quantity < 0) {
+      return res.status(400).json(formatErrorResponse({ message: "quantity must be a non-negative number" }, 400));
+    }
+
+    const cart = await CartModel.findOne({ userId });
+    if (!cart) {
+      return res.status(404).json(formatErrorResponse({ message: "Cart not found" }, 404));
+    }
+
+    const itemIndex = cart.items.findIndex(item => item.productId === productId);
+    if (itemIndex === -1) {
+      return res.status(404).json(formatErrorResponse({ message: "Item not found in cart" }, 404));
+    }
+
+    if (quantity === 0) {
+      cart.items.splice(itemIndex, 1);
+    } else {
+      cart.items[itemIndex].quantity = quantity;
+    }
+
+    cart.totalQuantity = cart.items.reduce((sum, item) => sum + item.quantity, 0);
+    cart.totalPrice = cart.items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+
+    await cart.save();
+    return res.json(successResponse(cart));
+  } catch (error) {
+    return res.status(500).json(formatErrorResponse(error));
+  }
+}
+
+export async function removeItem(req: Request, res: Response) {
+  try {
+    const { userId, productId } = req.params;
+    const cart = await CartModel.findOne({ userId });
+    if (!cart) {
+      return res.status(404).json(formatErrorResponse({ message: "Cart not found" }, 404));
+    }
+
+    cart.items = cart.items.filter(item => item.productId !== productId);
+    cart.totalQuantity = cart.items.reduce((sum, item) => sum + item.quantity, 0);
+    cart.totalPrice = cart.items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+
+    await cart.save();
+    return res.json(successResponse(cart));
+  } catch (error) {
+    return res.status(500).json(formatErrorResponse(error));
+  }
+}
+
+export async function clearCart(req: Request, res: Response) {
+  try {
+    const { userId } = req.params;
+    const cart = await CartModel.findOne({ userId });
+    if (cart) {
+      cart.items = [];
+      cart.totalQuantity = 0;
+      cart.totalPrice = 0;
+      await cart.save();
+    }
+    return res.json(successResponse({ message: "Cart cleared successfully" }));
+  } catch (error) {
+    return res.status(500).json(formatErrorResponse(error));
   }
 }
 
 export default {
   healthCheck,
   getCart,
-  addItem,
+  addToCart,
+  updateItemQuantity,
   removeItem,
   clearCart,
 };
-

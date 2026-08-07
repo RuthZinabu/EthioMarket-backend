@@ -1,17 +1,17 @@
 {
-  "compilerOptions": {
-    "target": "ES2020",
-    "module": "Node16",
-    "moduleResolution": "node16",
-    "lib": ["ES2020"],
-    "strict": true,
-    "esModuleInterop": true,
-    "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true,
-    "resolveJsonModule": true,
-    "declaration": true,
-    "declarationMap": true,
-    "sourceMap": true
-  },
-  "exclude": ["node_modules", "dist", "build"]
+  "extends": "./tsconfig.base.json",
+  "files": [],
+  "references": [
+    { "path": "./packages/shared-utils" },
+    { "path": "./packages/database/mongodb" },
+    { "path": "./packages/database/prisma" },
+    { "path": "./apps/api-gateway" },
+    { "path": "./apps/auth-service" },
+    { "path": "./apps/product-service" },
+    { "path": "./apps/order-service" },
+    { "path": "./apps/cart-service" },
+    { "path": "./apps/payment-service" },
+    { "path": "./apps/shipping-service" },
+    { "path": "./apps/notification-service" }
+  ]
 }

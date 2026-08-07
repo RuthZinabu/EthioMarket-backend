@@ -6,7 +6,8 @@
   "license": "MIT",
   "workspaces": [
     "apps/*",
-    "packages/*"
+    "packages/*",
+    "packages/database/*"
   ],
   "scripts": {
     "dev": "concurrently \"yarn workspace @emacare/api-gateway dev\" \"yarn workspace @emacare/auth-service dev\" \"yarn workspace @emacare/product-service dev\" \"yarn workspace @emacare/order-service dev\" \"yarn workspace @emacare/cart-service dev\" \"yarn workspace @emacare/payment-service dev\" \"yarn workspace @emacare/shipping-service dev\" \"yarn workspace @emacare/notification-service dev\"",
@@ -18,15 +19,25 @@
   "devDependencies": {
     "@types/cors": "^2.8.19",
     "@types/express-http-proxy": "^1.6.7",
+    "@types/mime-types": "^3.0.1",
+    "@types/multer": "^2.1.0",
     "@types/node-vault": "^0.9.1",
     "@types/winston": "^2.4.4",
     "concurrently": "^8.2.0",
+    "nodemon": "^3.1.14",
     "tsx": "^4.22.4",
     "typescript": "^5.0.0"
   },
   "dependencies": {
+    "helmet": "^8.2.0",
     "http-proxy-middleware": "2",
+    "mime-types": "^3.0.2",
+    "moment": "^2.30.1",
+    "mongoose": "^9.7.4",
+    "multer": "^2.2.0",
     "node-vault": "^0.12.0",
+    "tweetnacl": "^1.0.3",
+    "tweetnacl-util": "^0.15.1",
     "winston": "^3.19.0",
     "zod": "^4.4.3"
   }

@@ -1,0 +1,136 @@
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const mongoose_1 = __importDefault(require("mongoose"));
+const customer_1 = require("../types/customer");
+const customerSchema = new mongoose_1.default.Schema({
+    customerCode: { type: String, index: true },
+    fullName: { type: String, lowercase: true, trim: true },
+    walletId: { type: String, index: true },
+    motherName: { type: String },
+    nationality: { type: String },
+    clientId: { type: String },
+    birthDate: { type: Date },
+    phoneNumber: { type: String, trim: true, index: true },
+    sex: { type: String, enum: Object.values(customer_1.CustomerSex), default: customer_1.CustomerSex.Male },
+    gender: { type: String, enum: ["male", "female"] },
+    martialStatus: {
+        type: String,
+        enum: ["single", "married", "divorced", "widowed"],
+    },
+    employmentStatus: { type: String, enum: Object.values(customer_1.CustomerEmploymentStatus) },
+    occupation: { type: String },
+    employersName: { type: String },
+    monthlyIncome: { type: String },
+    // Contact/Profile
+    email: { type: String, trim: true },
+    avatar: { type: String },
+    userName: { type: String },
+    userBio: { type: String },
+    photo: { type: String },
+    signature: { type: String },
+    address: { type: mongoose_1.default.Schema.Types.ObjectId, ref: "Address" },
+    registeredByAgent: { type: mongoose_1.default.Schema.Types.ObjectId, ref: "Agent" },
+    // Documents
+    idFront: { type: String },
+    idBack: { type: String },
+    documentFront: { type: String },
+    documentBack: { type: String },
+    idNumber: { type: String },
+    residentialStatus: { type: String },
+    documentImage: { type: String },
+    userImage: { type: String },
+    // Auth & Security
+    realm: { type: String, default: "Member" },
+    password: { type: String },
+    passwordHistory: { type: [String], default: [] },
+    passwordChangedAt: { type: Date },
+    pin: { type: String },
+    loginPIN: { type: String },
+    firstPINSet: { type: Boolean, default: false },
+    PINHistory: [{ type: String }],
+    isSetPassword: { type: Boolean, default: false },
+    isSetPin: { type: Boolean, default: false },
+    // Device Info
+    deviceId: { type: String },
+    deviceUUID: { type: String, index: true },
+    deviceStatus: { type: String, enum: ["LINKED", "UNLINKED"], default: "UNLINKED" },
+    deviceLinkedDate: { type: Date },
+    devicePlatform: { type: String, enum: ["IOS", "ANDROID"] },
+    APPVersion: { type: String },
+    pushToken: { type: String },
+    APPInstallationDate: { type: Date },
+    // KYC
+    KYCStatus: {
+        type: String,
+        enum: ["PENDING", "APPROVED", "REJECTED"],
+        default: "PENDING",
+    },
+    KYCRejectReasonField: { type: Array },
+    KYCRejectReason: { type: String },
+    KYCApproved: { type: Boolean, default: false },
+    brachApproved: { type: Boolean, default: false },
+    isVerified: { type: Boolean, default: false },
+    KYCLevel: {
+        type: String,
+        enum: Object.values(customer_1.CustomerKYCLevel),
+        default: customer_1.CustomerKYCLevel.LEVEL_ONE,
+    },
+    faydaInfo: { type: Object },
+    faydaVerified: { type: Boolean, default: false },
+    kycDate: { type: Date },
+    KYCActionBy: [{ type: Object }],
+    BranchActionBy: [{ type: Object }],
+    // Registration & Referral
+    isSelfRegistered: { type: Boolean },
+    registerdBy: { type: Object },
+    referredBy: { type: String },
+    agentReferralCode: { type: String },
+    agentInfo: { type: Object },
+    // Account & Wallet
+    mainAccount: { type: String },
+    lastMainAccount: { type: String },
+    accountLinked: { type: Boolean, default: false },
+    lastAccountLinked: { type: Boolean },
+    andOrCustomerNumber: [{ type: String }],
+    accountType: { type: String, enum: ["NEW", "LINKED"] },
+    accountStatus: { type: String, enum: ["ACTIVE", "INACTIVE"] },
+    accountBranchType: { type: String, enum: ["CB", "IFB"] },
+    accountAuthorizationCode: { type: String },
+    loanScore: { type: Number, default: 0 },
+    customerNumber: { type: String },
+    virtualAccount: { type: Boolean },
+    walletBlockedUntil: Date,
+    walletBlockedReason: { type: String },
+    // Security & Login Stats
+    loginAttemptCount: { type: Number, default: 0 },
+    otpAttemptCount: { type: Number, default: 0 },
+    lockedOnAttemptMAX: { type: Boolean, default: false },
+    lastLoginAttempt: { type: Date },
+    nextLoginAttempt: { type: Date },
+    lastOtpAttempt: { type: Date },
+    lastLogin: { type: Date, default: null },
+    lastOnlineDate: { type: Date },
+    lastDailyReward: { type: Date },
+    sessionExpiresOn: { type: Date },
+    // Lifecycle & Status Flags
+    enabled: { type: Boolean, default: true },
+    isDeleted: { type: Boolean, default: false },
+    isActivated: { type: Boolean, default: false },
+    isAccountActive: { type: Boolean, default: true },
+    isAccountBlocked: { type: Boolean, default: false },
+    unlockAccountRequested: { type: Boolean, default: false },
+    cronBlockAction: { type: Boolean, default: false },
+    isUSSDEnabled: { type: Boolean, default: false },
+    isContactPerson: { type: Boolean, default: false },
+    // Metadata & Audit
+    createdBy: { type: mongoose_1.default.Schema.Types.ObjectId, ref: "User" },
+    lastModifiedBy: { type: mongoose_1.default.Schema.Types.ObjectId, ref: "User" },
+    lastModified: { type: Date },
+}, { timestamps: true });
+customerSchema.index({ phoneNumber: 1, email: 1, realm: 1 });
+const CustomerModel = mongoose_1.default.model("Customer", customerSchema);
+exports.default = CustomerModel;
+//# sourceMappingURL=customer.model.js.map
