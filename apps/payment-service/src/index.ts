@@ -2,7 +2,7 @@ import express from 'express';
 import dotenv from 'dotenv';
 import mongoose from 'mongoose';
 import { successResponse, formatErrorResponse, logger } from '@emacare/shared-utils';
-import { PaymentModel } from '@emacare/mongo/models';
+import paymentDal from './dal/payment.dal';
 
 dotenv.config();
 
@@ -33,7 +33,7 @@ app.post('/process', async (req: express.Request<{}, {}, PaymentRequest>, res: e
 
     const transactionId = `txn_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
 
-    const payment = await PaymentModel.create({
+    const payment = await paymentDal.createPayment({
       orderId,
       userId: userId || 'anonymous',
       amount,
@@ -44,8 +44,12 @@ app.post('/process', async (req: express.Request<{}, {}, PaymentRequest>, res: e
       cardLast4: cardLast4 || '4242',
     });
 
+    if (!payment) {
+      return res.status(500).json(formatErrorResponse({ message: 'Failed to process payment' }, 500));
+    }
+
     return res.status(201).json(successResponse({
-      ...payment.toObject(),
+      ...(typeof (payment as any).toObject === 'function' ? (payment as any).toObject() : payment),
       message: 'Payment processed successfully',
     }, 201));
   } catch (error: any) {
@@ -57,13 +61,7 @@ app.post('/process', async (req: express.Request<{}, {}, PaymentRequest>, res: e
 app.get('/:paymentId', async (req: express.Request, res: express.Response): Promise<any> => {
   try {
     const { paymentId } = req.params;
-    let payment: any = null;
-
-    if (mongoose.Types.ObjectId.isValid(paymentId)) {
-      payment = await PaymentModel.findById(paymentId);
-    } else {
-      payment = await PaymentModel.findOne({ transactionId: paymentId });
-    }
+    const payment = await paymentDal.getPaymentById(paymentId);
 
     if (!payment) {
       return res.status(404).json(formatErrorResponse({ message: 'Payment not found' }, 404));
@@ -78,7 +76,7 @@ app.get('/:paymentId', async (req: express.Request, res: express.Response): Prom
 // Get payments by order
 app.get('/order/:orderId', async (req: express.Request, res: express.Response): Promise<any> => {
   try {
-    const orderPayments = await PaymentModel.find({ orderId: req.params.orderId }).sort({ createdAt: -1 });
+    const orderPayments = await paymentDal.getPaymentsByOrderId(req.params.orderId);
     return res.json(successResponse(orderPayments));
   } catch (error: any) {
     return res.status(500).json(formatErrorResponse(error));

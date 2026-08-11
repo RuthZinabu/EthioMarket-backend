@@ -2,7 +2,7 @@ import express from 'express';
 import dotenv from 'dotenv';
 import mongoose from 'mongoose';
 import { successResponse, formatErrorResponse, logger } from '@emacare/shared-utils';
-import { ShipmentModel } from '@emacare/mongo/models';
+import shipmentDal from './dal/shipment.dal';
 
 dotenv.config();
 
@@ -32,7 +32,7 @@ app.post('/', async (req: express.Request<{}, {}, CreateShipmentRequest>, res: e
 
     const trackingNumber = `DHL${Date.now()}${Math.floor(Math.random() * 1000)}`;
 
-    const shipment = await ShipmentModel.create({
+    const shipment = await shipmentDal.createShipment({
       orderId,
       carrier: 'DHL',
       trackingNumber,
@@ -55,8 +55,12 @@ app.post('/', async (req: express.Request<{}, {}, CreateShipmentRequest>, res: e
       ],
     });
 
+    if (!shipment) {
+      return res.status(500).json(formatErrorResponse({ message: 'Failed to create shipment' }, 500));
+    }
+
     return res.status(201).json(successResponse({
-      ...shipment.toObject(),
+      ...(typeof (shipment as any).toObject === 'function' ? (shipment as any).toObject() : shipment),
       message: 'Shipment created successfully with DHL',
     }, 201));
   } catch (error: any) {
@@ -67,7 +71,7 @@ app.post('/', async (req: express.Request<{}, {}, CreateShipmentRequest>, res: e
 // Get shipment tracking
 app.get('/track/:trackingNumber', async (req: express.Request, res: express.Response): Promise<any> => {
   try {
-    const shipment = await ShipmentModel.findOne({ trackingNumber: req.params.trackingNumber });
+    const shipment = await shipmentDal.getShipmentByTrackingNumber(req.params.trackingNumber);
 
     if (!shipment) {
       return res.status(404).json(formatErrorResponse({ message: 'Shipment not found' }, 404));
@@ -88,7 +92,7 @@ app.get('/track/:trackingNumber', async (req: express.Request, res: express.Resp
 // Get shipment by order
 app.get('/order/:orderId', async (req: express.Request, res: express.Response): Promise<any> => {
   try {
-    const shipment = await ShipmentModel.findOne({ orderId: req.params.orderId });
+    const shipment = await shipmentDal.getShipmentByOrderId(req.params.orderId);
 
     if (!shipment) {
       return res.status(404).json(formatErrorResponse({ message: 'Shipment not found' }, 404));
@@ -106,26 +110,16 @@ app.patch('/:id/status', async (req: express.Request, res: express.Response): Pr
     const { status, location, description } = req.body;
     const { id } = req.params;
 
-    let shipment: any = null;
-    if (mongoose.Types.ObjectId.isValid(id)) {
-      shipment = await ShipmentModel.findById(id);
-    } else {
-      shipment = await ShipmentModel.findOne({ trackingNumber: id });
+    if (!status) {
+      return res.status(400).json(formatErrorResponse({ message: 'status field is required' }, 400));
     }
+
+    const shipment = await shipmentDal.updateShipmentStatus(id, status, location, description);
 
     if (!shipment) {
       return res.status(404).json(formatErrorResponse({ message: 'Shipment not found' }, 404));
     }
 
-    shipment.status = status;
-    shipment.updates.push({
-      status,
-      location: location || 'Transit Hub',
-      timestamp: new Date(),
-      description: description || `Status updated to ${status}`,
-    });
-
-    await shipment.save();
     return res.json(successResponse(shipment));
   } catch (error: any) {
     return res.status(500).json(formatErrorResponse(error));
