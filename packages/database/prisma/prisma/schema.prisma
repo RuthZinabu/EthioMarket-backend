@@ -16,18 +16,25 @@ enum PaymentStatus {
   FAILED
   REFUNDED
 }
+enum Currency{
+  ETB
+  USD
+  EUR
+}
 
 model Payment {
   id            String        @id @default(cuid())
   orderId       String
-  userId        String
+  customerId    String
   amount        Float
-  currency      String        @default("ETB")
+  originalCurrency      Currency @default(ETB)
+  convertedCurrency     Currency?
   serviceFee    Float         @default(0)
   vat           Float         @default(0)
   drrf          Float         @default(0)
   totalAmount   Float         @default(0)
   paidAmount    Float         @default(0)
+  billAmount    Float         @default(0)
   paymentMethod String
   paymentDetails Json?
   status        PaymentStatus @default(PENDING)
@@ -37,7 +44,7 @@ model Payment {
   updatedAt     DateTime      @updatedAt
 
   @@index([orderId])
-  @@index([userId])
+  @@index([customerId])
   @@index([status])
   @@map("payment")
 }

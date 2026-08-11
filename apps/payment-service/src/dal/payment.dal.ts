@@ -1,4 +1,4 @@
-import { prisma, Payment, PaymentStatus, Prisma } from "@emacare/prisma";
+import { prisma, Payment, PaymentStatus, Currency, Prisma } from "@emacare/prisma";
 
 export async function createPayment(data: Prisma.PaymentCreateInput): Promise<Payment> {
   return prisma.payment.create({
@@ -15,6 +15,12 @@ export async function getPaymentById(id: string): Promise<Payment | null> {
 export async function getPaymentsByOrderId(orderId: string): Promise<Payment[]> {
   return prisma.payment.findMany({
     where: { orderId },
+  });
+}
+
+export async function getPaymentsByCustomerId(customerId: string): Promise<Payment[]> {
+  return prisma.payment.findMany({
+    where: { customerId },
   });
 }
 
@@ -36,5 +42,6 @@ export default {
   createPayment,
   getPaymentById,
   getPaymentsByOrderId,
+  getPaymentsByCustomerId,
   updatePaymentStatus,
 };

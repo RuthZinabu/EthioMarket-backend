@@ -1,7 +1,7 @@
 import express from 'express';
 import dotenv from 'dotenv';
 import { successResponse, formatErrorResponse, logger } from '@emacare/shared-utils';
-import { PaymentStatus } from '@emacare/prisma';
+import { PaymentStatus, Currency } from '@emacare/prisma';
 import paymentDal from './dal/payment.dal';
 
 dotenv.config();
@@ -13,14 +13,16 @@ app.use(express.json());
 
 interface PaymentRequest {
   orderId: string;
-  userId: string;
+  customerId: string;
   amount: number;
-  currency?: string;
+  originalCurrency?: Currency;
+  convertedCurrency?: Currency;
   serviceFee?: number;
   vat?: number;
   drrf?: number;
   totalAmount?: number;
   paidAmount?: number;
+  billAmount?: number;
   paymentMethod?: string;
   paymentDetails?: any;
   cardToken?: string;
@@ -32,14 +34,16 @@ app.post('/process', async (req: express.Request<{}, {}, PaymentRequest>, res: e
   try {
     const {
       orderId,
-      userId,
+      customerId,
       amount,
-      currency,
+      originalCurrency,
+      convertedCurrency,
       serviceFee,
       vat,
       drrf,
       totalAmount,
       paidAmount,
+      billAmount,
       paymentMethod,
       paymentDetails,
       cardLast4,
@@ -51,14 +55,16 @@ app.post('/process', async (req: express.Request<{}, {}, PaymentRequest>, res: e
 
     const payment = await paymentDal.createPayment({
       orderId,
-      userId: userId || 'anonymous',
+      customerId: customerId || 'anonymous',
       amount,
-      currency: (currency || 'ETB').toUpperCase(),
+      originalCurrency: originalCurrency || Currency.ETB,
+      convertedCurrency: convertedCurrency || undefined,
       serviceFee: serviceFee || 0,
       vat: vat || 0,
       drrf: drrf || 0,
       totalAmount: totalAmount || amount,
       paidAmount: paidAmount || amount,
+      billAmount: billAmount || 0,
       paymentMethod: paymentMethod || 'credit_card',
       paymentDetails: paymentDetails || null,
       status: PaymentStatus.COMPLETED,
@@ -100,6 +106,16 @@ app.get('/order/:orderId', async (req: express.Request, res: express.Response): 
   try {
     const orderPayments = await paymentDal.getPaymentsByOrderId(req.params.orderId);
     return res.json(successResponse(orderPayments));
+  } catch (error: any) {
+    return res.status(500).json(formatErrorResponse(error));
+  }
+});
+
+// Get payments by customer
+app.get('/customer/:customerId', async (req: express.Request, res: express.Response): Promise<any> => {
+  try {
+    const customerPayments = await paymentDal.getPaymentsByCustomerId(req.params.customerId);
+    return res.json(successResponse(customerPayments));
   } catch (error: any) {
     return res.status(500).json(formatErrorResponse(error));
   }
