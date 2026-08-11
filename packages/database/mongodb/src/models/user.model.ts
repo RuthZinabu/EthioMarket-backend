@@ -12,7 +12,7 @@ const userSchema = new Schema<IUser>(
     email: { type: String, trim: true, lowercase: true, index: { unique: true, sparse: true } },
     avatar: { type: String },
     phoneNumber: { type: String },
-    address: { type: Schema.Types.ObjectId, ref: "Address" },
+    address: { type: String },
     organization: { type: Schema.Types.ObjectId, ref: "Institution" },
     realm: { type: String, enum: Realm },
     role: { type: String, enum: UserRole },

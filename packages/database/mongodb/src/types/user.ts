@@ -22,7 +22,7 @@ export interface IUser extends Document {
   phoneNumber: string;
   email: string;
   avatar?: string;
-  address?: Types.ObjectId;
+  address?: string;
   organization?: Types.ObjectId;
   vendorId?: Types.ObjectId;
   department?: Types.ObjectId;
