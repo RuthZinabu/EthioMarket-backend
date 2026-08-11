@@ -1,6 +1,13 @@
 import { Document, Types } from "mongoose";
 
-export type ShipmentStatus = "created" | "picked_up" | "in_transit" | "out_for_delivery" | "delivered" | "failed";
+export enum ShipmentStatus {
+  CREATED = "created",
+  PICKED_UP = "picked_up",
+  IN_TRANSIT = "in_transit",
+  OUT_FOR_DELIVERY = "out_for_delivery",
+  DELIVERED = "delivered",
+  FAILED = "failed",
+}
 
 export interface IShipmentUpdate {
   status: ShipmentStatus;
@@ -29,4 +36,4 @@ export interface IShipment {
   updatedAt?: Date;
 }
 
-export interface ShipmentDocument extends IShipment, Document {}
+export interface ShipmentDocument extends IShipment, Document { }
