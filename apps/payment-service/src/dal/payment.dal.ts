@@ -1,25 +1,40 @@
-import { paymentRepository } from "@emacare/mongo/repository";
-import type { IPayment, PaymentDocument } from "@emacare/mongo/types";
-import mongoose from "mongoose";
+import { prisma, Payment, PaymentStatus, Prisma } from "@emacare/prisma";
 
-export async function createPayment(data: Partial<IPayment>): Promise<PaymentDocument | null> {
-  return paymentRepository.create(data as any);
+export async function createPayment(data: Prisma.PaymentCreateInput): Promise<Payment> {
+  return prisma.payment.create({
+    data,
+  });
 }
 
-export async function getPaymentById(id: string): Promise<PaymentDocument | null> {
-  const filter = mongoose.Types.ObjectId.isValid(id)
-    ? { _id: new mongoose.Types.ObjectId(id) }
-    : { transactionId: id };
-  return paymentRepository.findOne(filter);
+export async function getPaymentById(id: string): Promise<Payment | null> {
+  return prisma.payment.findUnique({
+    where: { id },
+  });
 }
 
-export async function getPaymentsByOrderId(orderId: string): Promise<PaymentDocument[]> {
-  const docs = await paymentRepository.find({ orderId });
-  return (docs as PaymentDocument[]) || [];
+export async function getPaymentsByOrderId(orderId: string): Promise<Payment[]> {
+  return prisma.payment.findMany({
+    where: { orderId },
+  });
+}
+
+export async function updatePaymentStatus(
+  id: string,
+  status: PaymentStatus,
+  paidDate?: Date
+): Promise<Payment | null> {
+  return prisma.payment.update({
+    where: { id },
+    data: {
+      status,
+      paidDate: paidDate || (status === PaymentStatus.COMPLETED ? new Date() : undefined),
+    },
+  });
 }
 
 export default {
   createPayment,
   getPaymentById,
   getPaymentsByOrderId,
+  updatePaymentStatus,
 };

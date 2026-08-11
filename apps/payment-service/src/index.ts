@@ -1,14 +1,13 @@
 import express from 'express';
 import dotenv from 'dotenv';
-import mongoose from 'mongoose';
 import { successResponse, formatErrorResponse, logger } from '@emacare/shared-utils';
+import { PaymentStatus } from '@emacare/prisma';
 import paymentDal from './dal/payment.dal';
 
 dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3005;
-const MONGO_URL = process.env.MONGO_DB_URL || 'mongodb://localhost:27017/emacare';
 
 app.use(express.json());
 
@@ -16,8 +15,14 @@ interface PaymentRequest {
   orderId: string;
   userId: string;
   amount: number;
-  currency: string;
-  paymentMethod: string;
+  currency?: string;
+  serviceFee?: number;
+  vat?: number;
+  drrf?: number;
+  totalAmount?: number;
+  paidAmount?: number;
+  paymentMethod?: string;
+  paymentDetails?: any;
   cardToken?: string;
   cardLast4?: string;
 }
@@ -25,23 +30,40 @@ interface PaymentRequest {
 // Process payment
 app.post('/process', async (req: express.Request<{}, {}, PaymentRequest>, res: express.Response): Promise<any> => {
   try {
-    const { orderId, userId, amount, currency, paymentMethod, cardLast4 } = req.body;
+    const {
+      orderId,
+      userId,
+      amount,
+      currency,
+      serviceFee,
+      vat,
+      drrf,
+      totalAmount,
+      paidAmount,
+      paymentMethod,
+      paymentDetails,
+      cardLast4,
+    } = req.body;
 
-    if (!orderId || !amount || !currency) {
-      return res.status(400).json(formatErrorResponse({ message: 'Missing required fields: orderId, amount, currency' }, 400));
+    if (!orderId || !amount) {
+      return res.status(400).json(formatErrorResponse({ message: 'Missing required fields: orderId, amount' }, 400));
     }
-
-    const transactionId = `txn_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
 
     const payment = await paymentDal.createPayment({
       orderId,
       userId: userId || 'anonymous',
       amount,
-      currency: currency.toUpperCase(),
+      currency: (currency || 'ETB').toUpperCase(),
+      serviceFee: serviceFee || 0,
+      vat: vat || 0,
+      drrf: drrf || 0,
+      totalAmount: totalAmount || amount,
+      paidAmount: paidAmount || amount,
       paymentMethod: paymentMethod || 'credit_card',
-      status: 'completed',
-      transactionId,
+      paymentDetails: paymentDetails || null,
+      status: PaymentStatus.COMPLETED,
       cardLast4: cardLast4 || '4242',
+      paidDate: new Date(),
     });
 
     if (!payment) {
@@ -49,7 +71,7 @@ app.post('/process', async (req: express.Request<{}, {}, PaymentRequest>, res: e
     }
 
     return res.status(201).json(successResponse({
-      ...(typeof (payment as any).toObject === 'function' ? (payment as any).toObject() : payment),
+      ...payment,
       message: 'Payment processed successfully',
     }, 201));
   } catch (error: any) {
@@ -88,14 +110,7 @@ app.get('/health', (req, res) => {
   res.json({ status: 'Payment Service is running' });
 });
 
-async function startServer() {
-  try {
-    await mongoose.connect(MONGO_URL);
-    logger.info('Connected to MongoDB for Payment Service');
-  } catch (err) {
-    logger.warn('Could not connect to MongoDB for Payment Service', err);
-  }
-
+function startServer() {
   app.listen(PORT, () => {
     logger.info(`💳 Payment Service running on http://localhost:${PORT}`);
   });

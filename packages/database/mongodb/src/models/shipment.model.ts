@@ -1,5 +1,5 @@
 import mongoose, { Schema } from "mongoose";
-import { ShipmentDocument } from "../types/shipment";
+import { ShipmentDocument, ShipmentStatus } from "../types/shipment";
 
 const ShipmentUpdateSchema = new Schema({
   status: { type: String, required: true },
@@ -24,8 +24,8 @@ const ShipmentSchema = new Schema<ShipmentDocument>(
     weight: { type: Number, required: true, default: 1.0 },
     status: {
       type: String,
-      enum: ["created", "picked_up", "in_transit", "out_for_delivery", "delivered", "failed"],
-      default: "created",
+      enum: Object.values(ShipmentStatus),
+      default: ShipmentStatus.CREATED,
       index: true,
     },
     estimatedDelivery: { type: Date },

@@ -4,7 +4,6 @@ import PermissionGroupModel from "./permission-group.model";
 import ProductModel from "./product.model";
 import CartModel from "./cart.model";
 import OrderModel from "./order.model";
-import PaymentModel from "./payment.model";
 import ShipmentModel from "./shipment.model";
 import InstitutionModel from "./institution.model";
 import PermissionModel from "./permission.model";
@@ -19,7 +18,6 @@ export {
   ProductModel,
   CartModel,
   OrderModel,
-  PaymentModel,
   ShipmentModel,
   InstitutionModel,
   PermissionModel,

@@ -9,7 +9,6 @@ import VendorPayoutModel from "./models/vendor-payout.model";
 import ProductModel from "./models/product.model";
 import OrderModel from "./models/order.model";
 import CartModel from "./models/cart.model";
-import PaymentModel from "./models/payment.model";
 import ShipmentModel from "./models/shipment.model";
 
 const userRepository = new MongooseBaseRepository(UserModel);
@@ -22,7 +21,6 @@ const vendorPayoutRepository = new MongooseBaseRepository(VendorPayoutModel);
 const productRepository = new MongooseBaseRepository(ProductModel);
 const orderRepository = new MongooseBaseRepository(OrderModel);
 const cartRepository = new MongooseBaseRepository(CartModel);
-const paymentRepository = new MongooseBaseRepository(PaymentModel);
 const shipmentRepository = new MongooseBaseRepository(ShipmentModel);
 
 export {
@@ -36,7 +34,6 @@ export {
   productRepository,
   orderRepository,
   cartRepository,
-  paymentRepository,
   shipmentRepository,
 };
 

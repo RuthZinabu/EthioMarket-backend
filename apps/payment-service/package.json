@@ -15,7 +15,8 @@
     "stripe": "^13.0.0",
     "mongoose": "^7.0.0",
     "dotenv": "^16.0.0",
-    "@emacare/shared-utils": "^1.0.0"
+    "@emacare/shared-utils": "^1.0.0",
+    "@emacare/prisma": "^1.0.0"
   },
   "devDependencies": {
     "@types/express": "^4.17.0",
