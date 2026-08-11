@@ -1,19 +1,17 @@
-import { Document } from "mongoose";
-import { Types } from "mongoose";
+import { Document, Types } from "mongoose";
 import { Realm } from "./enum";
 
 export enum PermissionModule {
   CUSTOMER = "Customer",
-  LEDGER = "Ledger",
-  AGENT = "Agent",
-  PAYABLE_RECEIVABLE = "Payable / Receivable",
-  RULE_ENGINE = "Rule Engine",
-  RECONCILIATION = "Reconciliation",
+  VENDOR = "Vendor",
+  VENDOR_PAYOUT = "Vendor Payout",
+  PRODUCT = "Product",
+  ORDER = "Order",
+  SHIPMENT = "Shipment",
   PERMISSION_GROUP = "Permission Group",
   USER = "User",
   AUDIT_LOG = "Audit Log",
   DEPARTMENT = "Department",
-  FINANCIAL_INSTITUTION = "Financial Institution",
 }
 
 export enum PermissionAction {
@@ -32,16 +30,15 @@ export enum PermissionRole {
 
 export enum ActionResourceType {
   CUSTOMER = "Customer",
-  LEDGER = "Ledger",
-  AGENT = "Agent",
-  PAYABLE_RECEIVABLE = "Payable / Receivable",
-  RULE_ENGINE = "Rule Engine",
-  RECONCILIATION = "Reconciliation",
+  VENDOR = "Vendor",
+  VENDOR_PAYOUT = "Vendor Payout",
+  PRODUCT = "Product",
+  ORDER = "Order",
+  SHIPMENT = "Shipment",
   PERMISSION_GROUP = "Permission Group",
   USER = "User",
   AUDIT_LOG = "Audit Log",
   DEPARTMENT = "Department",
-  FINANCIAL_INSTITUTION = "Financial Institution",
 }
 
 export enum ActionRequestOperation {

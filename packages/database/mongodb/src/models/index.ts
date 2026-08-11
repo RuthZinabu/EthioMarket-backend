@@ -9,6 +9,8 @@ import ShipmentModel from "./shipment.model";
 import InstitutionModel from "./institution.model";
 import PermissionModel from "./permission.model";
 import CustomerKycModel from "./customerKyc.model";
+import VendorModel from "./vendor.model";
+import VendorPayoutModel from "./vendor-payout.model";
 
 export {
   UserModel,
@@ -22,4 +24,6 @@ export {
   InstitutionModel,
   PermissionModel,
   CustomerKycModel,
+  VendorModel,
+  VendorPayoutModel,
 };

@@ -1,10 +1,58 @@
+# Dependencies
 node_modules/
+.pnp
+.pnp.js
+.yarn/cache
+.yarn/unplugged
+.yarn/build-state.yml
+.yarn/install-state.gz
+
+# Build outputs
 dist/
 build/
-.env
-.env.local
-.DS_Store
+out/
+*.tsbuildinfo
+.turbo/
+.next/
+coverage/
+.nyc_output/
+
+# Logs
 *.log
+logs/
+yarn-debug.log*
+yarn-error.log*
+npm-debug.log*
+lerna-debug.log*
+
+# Environment & Secrets
+.env
+.env.*
+!.env.example
+vault-secrets.json
+*.pem
+*.key
+*.crt
+
+# IDE & Editor
 .vscode/
 .idea/
-vault-secrets.json
+*.swp
+*.swo
+*.sublime-project
+*.sublime-workspace
+
+# OS & System
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Temporary & Cache
+tmp/
+temp/
+.cache/
+.gemini/

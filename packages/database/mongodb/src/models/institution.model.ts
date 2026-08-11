@@ -35,6 +35,8 @@ const institutionSchema = new mongoose.Schema<IInstitution>(
   { timestamps: true },
 );
 institutionSchema.index({ enabled: 1, isDeleted: 1 });
-const InstitutionModel = mongoose.model<IInstitution>("Institution", institutionSchema);
+const InstitutionModel =
+  (mongoose.models.Institution as mongoose.Model<IInstitution>) ||
+  mongoose.model<IInstitution>("Institution", institutionSchema);
 
 export default InstitutionModel;

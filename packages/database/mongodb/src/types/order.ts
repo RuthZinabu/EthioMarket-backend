@@ -4,6 +4,7 @@ export type OrderStatus = "pending" | "paid" | "processing" | "shipped" | "deliv
 
 export interface IOrderItem {
   productId: string;
+  vendorId?: string;
   name: string;
   price: number;
   quantity: number;
@@ -13,6 +14,9 @@ export interface IOrderItem {
 export interface IOrder {
   userId: string;
   items: IOrderItem[];
+  subtotal?: number;
+  shippingFee?: number;
+  tax?: number;
   totalAmount: number;
   currency: string;
   shippingAddress: {

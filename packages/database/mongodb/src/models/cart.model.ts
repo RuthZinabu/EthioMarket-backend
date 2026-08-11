@@ -3,6 +3,7 @@ import { CartDocument } from "../types/cart";
 
 const CartItemSchema = new Schema({
   productId: { type: String, required: true },
+  vendorId: { type: String },
   name: { type: String, required: true },
   price: { type: Number, required: true },
   quantity: { type: Number, required: true, default: 1 },
@@ -19,5 +20,8 @@ const CartSchema = new Schema<CartDocument>(
   { timestamps: true }
 );
 
-const CartModel = mongoose.model<CartDocument>("Cart", CartSchema);
+const CartModel =
+  (mongoose.models.Cart as mongoose.Model<CartDocument>) ||
+  mongoose.model<CartDocument>("Cart", CartSchema);
+
 export default CartModel;

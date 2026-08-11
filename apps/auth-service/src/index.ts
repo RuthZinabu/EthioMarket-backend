@@ -3,8 +3,10 @@
  * @author ethio-post Development Team
  * @version 1.0.0
  */
+import path from "path";
 import dotenv from "dotenv";
-dotenv.config({ path: "../../.env" });
+dotenv.config({ path: path.resolve(process.cwd(), ".env") });
+dotenv.config({ path: path.resolve(__dirname, "../../..", ".env") });
 import { corsOptions, errorHandler, logger, NotFoundException } from "@emacare/shared-utils";
 import { connectDb } from "@emacare/mongo/repository";
 import { RedisClient} from "@emacare/shared-utils";

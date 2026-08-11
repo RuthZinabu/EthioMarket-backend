@@ -12,14 +12,13 @@ function createCrudPermissions(module: PermissionModule) {
 
 export const PERMISSIONS = {
   CUSTOMER: createCrudPermissions(PermissionModule.CUSTOMER),
-  LEDGER: createCrudPermissions(PermissionModule.LEDGER),
-  AGENT: createCrudPermissions(PermissionModule.AGENT),
-  PAYABLE_RECEIVABLE: createCrudPermissions(PermissionModule.PAYABLE_RECEIVABLE),
-  RULE_ENGINE: createCrudPermissions(PermissionModule.RULE_ENGINE),
-  RECONCILIATION: createCrudPermissions(PermissionModule.RECONCILIATION),
+  VENDOR: createCrudPermissions(PermissionModule.VENDOR),
+  VENDOR_PAYOUT: createCrudPermissions(PermissionModule.VENDOR_PAYOUT),
+  PRODUCT: createCrudPermissions(PermissionModule.PRODUCT),
+  ORDER: createCrudPermissions(PermissionModule.ORDER),
+  SHIPMENT: createCrudPermissions(PermissionModule.SHIPMENT),
   PERMISSION_GROUP: createCrudPermissions(PermissionModule.PERMISSION_GROUP),
   USER: createCrudPermissions(PermissionModule.USER),
   AUDIT_LOG: createCrudPermissions(PermissionModule.AUDIT_LOG),
   DEPARTMENT: createCrudPermissions(PermissionModule.DEPARTMENT),
-  FINANCIAL_INSTITUTION: createCrudPermissions(PermissionModule.FINANCIAL_INSTITUTION),
 } as const;

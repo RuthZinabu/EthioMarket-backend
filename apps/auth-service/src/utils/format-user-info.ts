@@ -23,7 +23,6 @@ export function formatUserInfo(
       user?.organization ||
       (user as any).organization?._id?.toString() ||
       (user as any).organization?.toString(),
-    organizationEnum: user?.organizationEnum,
     isMainToken,
     isSetPassword: user.isSetPassword,
     permissionGroup: user?.permissionGroup,
@@ -41,7 +40,6 @@ export function formatUserInfo(
     realm: user?.realm,
     role: user.role,
     organization: user?.organization || "",
-    organizationEnum: user.organizationEnum,
     permissionGroup: user?.permissionGroup,
     additionalPermissions: user.additionalPermissions || [],
   };

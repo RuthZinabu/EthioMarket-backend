@@ -93,7 +93,6 @@ export async function initConfig(): Promise<Partial<EnvConfig> | null> {
       "SEAWEEDFS_FILER_URL",
       "SEAWEEDFS_PUBLIC_URL",
       "SEAWEEDFS_FOLDER_NAME",
-      "BRANCH_JWT_SECRET",
     ];
     logger.info("Cart init-config env key presence (before normalize)", {
       present: debugKeys.reduce((acc, k) => {

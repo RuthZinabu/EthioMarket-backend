@@ -1,7 +1,8 @@
-import { Document, Types } from "mongoose";
+import { Document } from "mongoose";
 
 export interface ICartItem {
   productId: string;
+  vendorId?: string;
   name: string;
   price: number;
   quantity: number;

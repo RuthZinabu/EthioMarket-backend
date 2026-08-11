@@ -1,7 +1,6 @@
 export interface EnvConfig {
   MONGO_DB_URL: string;
   JWT_SECRET_KEY: string;
-  BRANCH_JWT_SECRET: string;
   JWT_EXPIRES_IN: string;
   JWT_ENCRYPTION_KEY: string;
   TEMP_TOKEN_EXPIRY: string;
@@ -22,6 +21,4 @@ export interface EnvConfig {
   RABBIT_MQ_PASSWORD: string;
   RABBIT_MQ_VHOST: string;
   NODE_ENV: string;
-  BRANCH_SERVICE_SECRET: string;
-  BRANCH_SERVICE_SIGNATURE: string;
 }

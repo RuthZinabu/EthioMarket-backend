@@ -11,3 +11,5 @@ export * from "./shipment";
 export * from "./enum";
 export * from "./institution";
 export * from "./customer-kyc";
+export * from "./vendor";
+export * from "./vendor-payout";

@@ -41,9 +41,8 @@ CustomerKYCSchema.index(
 );
 
 // Create model
-const CustomerKYCModel = mongoose.model<CustomerKYC>(
-  "CustomerKYC",
-  CustomerKYCSchema,
-);
+const CustomerKYCModel =
+  (mongoose.models.CustomerKYC as mongoose.Model<CustomerKYC>) ||
+  mongoose.model<CustomerKYC>("CustomerKYC", CustomerKYCSchema);
 
 export default CustomerKYCModel;

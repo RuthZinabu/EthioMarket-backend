@@ -1,12 +1,10 @@
-FROM node:18-alpine
+FROM node:22-alpine
 
 WORKDIR /app
 
-COPY package.json yarn.lock ./
-RUN yarn install --frozen-lockfile
-
 COPY . .
-RUN yarn workspace @emacare/shared-utils build && yarn workspace @emacare/payment-service build
+RUN yarn install --frozen-lockfile
+RUN yarn workspace @emacare/mongo build && yarn workspace @emacare/prisma build && yarn workspace @emacare/shared-utils build && yarn workspace @emacare/payment-service build
 
 EXPOSE 3005
 

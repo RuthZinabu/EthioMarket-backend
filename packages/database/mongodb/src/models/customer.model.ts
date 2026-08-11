@@ -1,145 +1,64 @@
-import mongoose from "mongoose";
-import { CustomerEmploymentStatus, CustomerKYCLevel, CustomerSex, ICustomer } from "../types/customer";
+import mongoose, { Schema } from "mongoose";
+import { ICustomer, CustomerStatus, CustomerSex } from "../types/customer";
 
-const customerSchema = new mongoose.Schema<ICustomer>(
+const AddressSchema = new Schema(
   {
-    customerCode: { type: String, index: true },
-    fullName: { type: String, lowercase: true, trim: true },
-    walletId: { type: String, index: true },
-    motherName: { type: String },
-    nationality: { type: String },
-    clientId: { type: String },
-    birthDate: { type: Date },
-    phoneNumber: { type: String, trim: true, index: true },
-    sex: { type: String, enum: Object.values(CustomerSex), default: CustomerSex.Male },
-    gender: { type: String, enum: ["male", "female"] },
-    martialStatus: {
-      type: String,
-      enum: ["single", "married", "divorced", "widowed"],
-    },
-    employmentStatus: { type: String, enum: Object.values(CustomerEmploymentStatus) },
-    occupation: { type: String },
-    employersName: { type: String },
-    monthlyIncome: { type: String },
+    label: { type: String, default: "Home" },
+    street: { type: String, required: true },
+    city: { type: String, required: true },
+    state: { type: String },
+    country: { type: String, required: true, default: "ET" },
+    zipCode: { type: String },
+    isDefault: { type: Boolean, default: false },
+  },
+  { _id: false }
+);
 
-    // Contact/Profile
-    email: { type: String, trim: true },
+const customerSchema = new Schema<ICustomer>(
+  {
+    userCode: { type: String, required: true, index: true },
+    customerCode: { type: String },
+    fullName: { type: String, required: true, trim: true },
+    email: { type: String, trim: true, lowercase: true, index: { unique: true, sparse: true } },
+    phoneNumber: { type: String, required: true, index: true },
     avatar: { type: String },
-    userName: { type: String },
-    userBio: { type: String },
-    photo: { type: String },
-    signature: { type: String },
-    address: { type: mongoose.Schema.Types.ObjectId, ref: "Address" },
-    registeredByAgent: { type: mongoose.Schema.Types.ObjectId, ref: "Agent" },
-    // Documents
-    idFront: { type: String },
-    idBack: { type: String },
-    documentFront: { type: String },
-    documentBack: { type: String },
-    idNumber: { type: String },
-    residentialStatus: { type: String },
-    documentImage: { type: String },
-    userImage: { type: String },
+    sex: { type: String, enum: Object.values(CustomerSex) },
+    birthDate: { type: Date },
+    nationality: { type: String },
 
-    // Auth & Security
-    realm: { type: String, default: "Member" },
+    addresses: [AddressSchema],
+    preferredCurrency: { type: String, default: "USD" },
+
+    realm: { type: String, default: "Customer" },
     password: { type: String },
     passwordHistory: { type: [String], default: [] },
     passwordChangedAt: { type: Date },
-    pin: { type: String },
-    loginPIN: { type: String },
-    firstPINSet: { type: Boolean, default: false },
-    PINHistory: [{ type: String }],
     isSetPassword: { type: Boolean, default: false },
-    isSetPin: { type: Boolean, default: false },
-
-    // Device Info
-    deviceId: { type: String },
-    deviceUUID: { type: String, index: true },
-    deviceStatus: { type: String, enum: ["LINKED", "UNLINKED"], default: "UNLINKED" },
-    deviceLinkedDate: { type: Date },
-    devicePlatform: { type: String, enum: ["IOS", "ANDROID"] },
-    APPVersion: { type: String },
-    pushToken: { type: String },
-    APPInstallationDate: { type: Date },
-
-    // KYC
-    KYCStatus: {
-      type: String,
-      enum: ["PENDING", "APPROVED", "REJECTED"],
-      default: "PENDING",
-    },
-    KYCRejectReasonField: { type: Array },
-    KYCRejectReason: { type: String },
-    KYCApproved: { type: Boolean, default: false },
-    brachApproved: { type: Boolean, default: false },
     isVerified: { type: Boolean, default: false },
-    KYCLevel: {
+
+    deviceId: { type: String },
+    pushToken: { type: String },
+
+    status: {
       type: String,
-      enum: Object.values(CustomerKYCLevel),
-      default: CustomerKYCLevel.LEVEL_ONE,
+      enum: Object.values(CustomerStatus),
+      default: CustomerStatus.ACTIVE,
     },
-    faydaInfo: { type: Object },
-    faydaVerified: { type: Boolean, default: false },
-    kycDate: { type: Date },
-    KYCActionBy: [{ type: Object }],
-    BranchActionBy: [{ type: Object }],
-
-    // Registration & Referral
-    isSelfRegistered: { type: Boolean },
-    registerdBy: { type: Object },
-    referredBy: { type: String },
-    agentReferralCode: { type: String },
-    agentInfo: { type: Object },
-    // Account & Wallet
-    mainAccount: { type: String },
-    lastMainAccount: { type: String },
-    accountLinked: { type: Boolean, default: false },
-    lastAccountLinked: { type: Boolean },
-    andOrCustomerNumber: [{ type: String }],
-    accountType: { type: String, enum: ["NEW", "LINKED"] },
-    accountStatus: { type: String, enum: ["ACTIVE", "INACTIVE"] },
-    accountBranchType: { type: String, enum: ["CB", "IFB"] },
-    accountAuthorizationCode: { type: String },
-    loanScore: { type: Number, default: 0 },
-    customerNumber: { type: String },
-    virtualAccount: { type: Boolean },
-    walletBlockedUntil: Date,
-    walletBlockedReason: { type: String },
-
-    // Security & Login Stats
-    loginAttemptCount: { type: Number, default: 0 },
-    otpAttemptCount: { type: Number, default: 0 },
-    lockedOnAttemptMAX: { type: Boolean, default: false },
-    lastLoginAttempt: { type: Date },
-    nextLoginAttempt: { type: Date },
-    lastOtpAttempt: { type: Date },
-    lastLogin: { type: Date, default: null },
-    lastOnlineDate: { type: Date },
-    lastDailyReward: { type: Date },
-    sessionExpiresOn: { type: Date },
-
-    // Lifecycle & Status Flags
     enabled: { type: Boolean, default: true },
     isDeleted: { type: Boolean, default: false },
-    isActivated: { type: Boolean, default: false },
-    isAccountActive: { type: Boolean, default: true },
-    isAccountBlocked: { type: Boolean, default: false },
-    unlockAccountRequested: { type: Boolean, default: false },
-    cronBlockAction: { type: Boolean, default: false },
-    isUSSDEnabled: { type: Boolean, default: false },
-    isContactPerson: { type: Boolean, default: false },
 
-    // Metadata & Audit
-    createdBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
-    lastModifiedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
-    lastModified: { type: Date },
+    loginAttemptCount: { type: Number, default: 0 },
+    lastLoginAttempt: { type: Date },
+    lastLogin: { type: Date, default: null },
+
+    createdBy: { type: Schema.Types.ObjectId, ref: "User" },
+    lastModifiedBy: { type: Schema.Types.ObjectId, ref: "User" },
   },
-  { timestamps: true },
+  { timestamps: true }
 );
 
-customerSchema.index({ phoneNumber: 1, email: 1, realm: 1 });
-
-const CustomerModel = mongoose.model<ICustomer>("Customer", customerSchema);
+const CustomerModel =
+  (mongoose.models.Customer as mongoose.Model<ICustomer>) ||
+  mongoose.model<ICustomer>("Customer", customerSchema);
 
 export default CustomerModel;

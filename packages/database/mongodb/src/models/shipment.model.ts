@@ -34,5 +34,7 @@ const ShipmentSchema = new Schema<ShipmentDocument>(
   { timestamps: true }
 );
 
-const ShipmentModel = mongoose.model<ShipmentDocument>("Shipment", ShipmentSchema);
+const ShipmentModel =
+  (mongoose.models.Shipment as mongoose.Model<ShipmentDocument>) ||
+  mongoose.model<ShipmentDocument>("Shipment", ShipmentSchema);
 export default ShipmentModel;

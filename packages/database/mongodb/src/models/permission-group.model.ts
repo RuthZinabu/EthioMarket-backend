@@ -27,8 +27,10 @@ const PermissionGroupSchema = new Schema<IPermissionGroup>(
   { timestamps: true },
 );
 
-export const PermissionGroup = mongoose.model<IPermissionGroup>(
-  "PermissionGroup",
-  PermissionGroupSchema,
-);
+export const PermissionGroup =
+  (mongoose.models.PermissionGroup as mongoose.Model<IPermissionGroup>) ||
+  mongoose.model<IPermissionGroup>(
+    "PermissionGroup",
+    PermissionGroupSchema,
+  );
 export default PermissionGroup;

@@ -4,6 +4,13 @@
   "license": "MIT",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "exports": {
+    ".": "./dist/index.js",
+    "./types": "./dist/types/index.js",
+    "./models": "./dist/models/index.js",
+    "./repository": "./dist/repository.js",
+    "./*": "./dist/*"
+  },
   "scripts": {
     "build": "tsc",
     "test": "echo \"no tests\""

@@ -1,4 +1,4 @@
-import { model, Schema } from "mongoose";
+import mongoose, { model, Schema } from "mongoose";
 import { IUser, UserRole } from "../types/user";
 import { Realm } from "../types/enum";
 import { PermissionAction } from "../types/permission";
@@ -10,16 +10,13 @@ const userSchema = new Schema<IUser>(
     lastName: { type: String, lowercase: true, trim: true },
     middleName: { type: String, lowercase: true, trim: true },
     email: { type: String, trim: true, lowercase: true, index: { unique: true, sparse: true } },
-    ussdPin: { type: String },
-    ussdEnabled: { type: Boolean, default: false },
     avatar: { type: String },
     phoneNumber: { type: String },
-    customerCode: { type: String },
     address: { type: Schema.Types.ObjectId, ref: "Address" },
-    organization: { type: Schema.Types.ObjectId, refPath: "organizationEnum" },
-    organizationEnum: { type: String, enum: ["Institution", "Agent"] },
+    organization: { type: Schema.Types.ObjectId, ref: "Vendor" },
+    vendorId: { type: Schema.Types.ObjectId, ref: "Vendor", index: true },
     realm: { type: String, enum: Realm },
-    role: { type: String, enum: UserRole },
+    role: { type: String, enum: Object.values(UserRole) },
     password: { type: String },
     passwordHistory: { type: [String], default: [] },
     passwordChangedAt: { type: Date },
@@ -48,9 +45,10 @@ const userSchema = new Schema<IUser>(
   { timestamps: true },
 );
 
-userSchema.index({ phoneNumber: 1, email: 1, realm: 1, role: 1, organization: 1 });
-userSchema.index({ customerCode: 1 });
+userSchema.index({ phoneNumber: 1, email: 1, realm: 1, role: 1, vendorId: 1 });
 
-const UserModel = model<IUser>("User", userSchema);
+const UserModel =
+  (mongoose.models.User as mongoose.Model<IUser>) ||
+  model<IUser>("User", userSchema);
 
 export default UserModel;

@@ -1,13 +1,10 @@
 import {
   institutionRepository,
   userRepository,
-  permissionRepository,
 } from "@emacare/mongo/repository";
 
 import { InstitutionType } from "@emacare/mongo/types/institution";
-import { PermissionAction } from "@emacare/mongo/types";
 import { UserRole, Realm } from "@emacare/mongo/types/user";
-
 import { logger } from "@emacare/shared-utils";
 
 import { hashedOtpOrPassword } from "../../utils/password-validator";
@@ -17,7 +14,7 @@ const SUPER_ADMIN_SWIFT = "SUPERADMIN";
 
 export async function seedSuperAdmin() {
   try {
-    // ── Institution ────────────────────────────────────────────────────────────
+    // ── Super Admin Store / Platform Org ─────────────────────────────────────────
     let institutionId: any;
 
     const existing = await institutionRepository.findOne({
@@ -26,22 +23,22 @@ export async function seedSuperAdmin() {
 
     if (!existing) {
       const institution = await institutionRepository.create({
-        name: "Super Admin Network",
+        name: "EmaCare Global Marketplace Admin",
         institutionType: InstitutionType.DEFAULT,
         swiftCode: SUPER_ADMIN_SWIFT,
         phoneNumber: "+251900000000",
-        email: "superadmin@allbanknetwork.com",
+        email: "superadmin@ethiomarket.com",
         enabled: true,
         isDeleted: false,
       });
 
       institutionId = institution!._id;
 
-      logger.info("Super admin institution seeded.");
+      logger.info("Super admin platform organization seeded.");
     } else {
       institutionId = existing._id;
 
-      logger.info("Super admin institution already exists.");
+      logger.info("Super admin platform organization already exists.");
     }
 
     // ── Permissions ────────────────────────────────────────────────────────────
@@ -55,7 +52,7 @@ export async function seedSuperAdmin() {
       UserRole.Checker,
     );
 
-    // ── Maker ──────────────────────────────────────────────────────────────────
+    // ── Maker Admin User ────────────────────────────────────────────────────────
     const makerPhone = "+251900000001";
 
     const existingMaker = await userRepository.findOne({
@@ -64,18 +61,15 @@ export async function seedSuperAdmin() {
 
     const makerPayload = {
       userCode: "USR-SUPER-MAKER",
-      firstName: "Super",
+      firstName: "Platform",
       middleName: "Admin",
       lastName: "Maker",
       phoneNumber: makerPhone,
-      email: "superadmin.maker@allbanknetwork.com",
+      email: "admin.maker@ethiomarket.com",
       password: await hashedOtpOrPassword("password123"),
-      ussdPin: await hashedOtpOrPassword("1234"),
-      ussdEnabled: true,
       role: UserRole.Maker,
       realm: Realm.Institution,
       organization: institutionId,
-      organizationEnum: Realm.Institution,
       isSetPassword: true,
       enabled: true,
       isDeleted: false,
@@ -85,14 +79,14 @@ export async function seedSuperAdmin() {
     if (!existingMaker) {
       await userRepository.create(makerPayload);
 
-      logger.info("Super admin maker user seeded.");
+      logger.info("Platform admin maker user seeded successfully.");
     } else {
       await userRepository.updateOne({ _id: existingMaker._id }, makerPayload);
 
-      logger.info("Super admin maker user updated.");
+      logger.info("Platform admin maker user updated successfully.");
     }
 
-    // ── Checker ────────────────────────────────────────────────────────────────
+    // ── Checker Admin User ──────────────────────────────────────────────────────
     const checkerPhone = "+251900000002";
 
     const existingChecker = await userRepository.findOne({
@@ -101,18 +95,15 @@ export async function seedSuperAdmin() {
 
     const checkerPayload = {
       userCode: "USR-SUPER-CHECKER",
-      firstName: "Super",
+      firstName: "Platform",
       middleName: "Admin",
       lastName: "Checker",
       phoneNumber: checkerPhone,
-      email: "superadmin.checker@allbanknetwork.com",
+      email: "admin.checker@ethiomarket.com",
       password: await hashedOtpOrPassword("password123"),
-      ussdPin: await hashedOtpOrPassword("1234"),
-      ussdEnabled: true,
       role: UserRole.Checker,
       realm: Realm.Institution,
       organization: institutionId,
-      organizationEnum: Realm.Institution,
       isSetPassword: true,
       enabled: true,
       isDeleted: false,
@@ -122,11 +113,11 @@ export async function seedSuperAdmin() {
     if (!existingChecker) {
       await userRepository.create(checkerPayload);
 
-      logger.info("Super admin checker user seeded.");
+      logger.info("Platform admin checker user seeded successfully.");
     } else {
       await userRepository.updateOne({ _id: existingChecker._id }, checkerPayload);
 
-      logger.info("Super admin checker user updated.");
+      logger.info("Platform admin checker user updated successfully.");
     }
   } catch (error) {
     logger.error("Error seeding super admin:", error);

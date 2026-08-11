@@ -24,7 +24,7 @@ export class RedisClient {
 
     this.instance = new Redis(config.url, {
       connectTimeout: 5000, // Wait 5s for connection
-      retryStrategy: (times) => {
+      retryStrategy: (times: number) => {
         // Only retry if we haven't failed too many times
         if (times > 5) return null; // Stop retrying after 5 attempts
         return Math.min(times * 500, 2000);
@@ -32,7 +32,7 @@ export class RedisClient {
       maxRetriesPerRequest: 3,
     });
 
-    this.instance.on("error", (err) => {
+    this.instance.on("error", (err: any) => {
       logger.error("Redis Client Error:", err);
     });
 

@@ -17,5 +17,7 @@ const PermissionSchema = new Schema<IPermission>(
   { timestamps: true },
 );
 
-export const Permission = mongoose.model<IPermission>("Permission", PermissionSchema);
+export const Permission =
+  (mongoose.models.Permission as mongoose.Model<IPermission>) ||
+  mongoose.model<IPermission>("Permission", PermissionSchema);
 export default Permission;

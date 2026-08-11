@@ -3,6 +3,7 @@ import { OrderDocument } from "../types/order";
 
 const OrderItemSchema = new Schema({
   productId: { type: String, required: true },
+  vendorId: { type: String, index: true },
   name: { type: String, required: true },
   price: { type: Number, required: true },
   quantity: { type: Number, required: true },
@@ -13,6 +14,9 @@ const OrderSchema = new Schema<OrderDocument>(
   {
     userId: { type: String, required: true, index: true },
     items: [OrderItemSchema],
+    subtotal: { type: Number },
+    shippingFee: { type: Number, default: 0 },
+    tax: { type: Number, default: 0 },
     totalAmount: { type: Number, required: true },
     currency: { type: String, default: "USD" },
     shippingAddress: {
@@ -36,5 +40,7 @@ const OrderSchema = new Schema<OrderDocument>(
   { timestamps: true }
 );
 
-const OrderModel = mongoose.model<OrderDocument>("Order", OrderSchema);
+const OrderModel =
+  (mongoose.models.Order as mongoose.Model<OrderDocument>) ||
+  mongoose.model<OrderDocument>("Order", OrderSchema);
 export default OrderModel;

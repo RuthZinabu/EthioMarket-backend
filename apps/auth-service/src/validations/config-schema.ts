@@ -20,9 +20,6 @@ export const configSchema = z.object({
   RABBIT_MQ_VHOST: optionalNonEmptyString,
   NODE_ENV: z.string().optional(),
   TEMP_TOKEN_EXPIRY: z.string().optional(),
-  BRANCH_SERVICE_SECRET: z.string().min(1, { message: "Branch service secret is required" }),
-  BRANCH_SERVICE_SIGNATURE: z.string().min(1, { message: "Branch service signature is required" }),
-  BRANCH_JWT_SECRET: z.string().min(1, { message: "Branch JWT secret is required" }),
 });
 
 type ConfigType = z.infer<typeof configSchema>;

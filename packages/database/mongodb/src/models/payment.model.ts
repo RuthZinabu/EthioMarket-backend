@@ -20,5 +20,7 @@ const PaymentSchema = new Schema<PaymentDocument>(
   { timestamps: true }
 );
 
-const PaymentModel = mongoose.model<PaymentDocument>("Payment", PaymentSchema);
+const PaymentModel =
+  (mongoose.models.Payment as mongoose.Model<PaymentDocument>) ||
+  mongoose.model<PaymentDocument>("Payment", PaymentSchema);
 export default PaymentModel;
