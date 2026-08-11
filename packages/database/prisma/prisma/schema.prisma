@@ -10,132 +10,28 @@ datasource db {
   provider = "postgresql"
 }
 
-enum TransactionType {
-  WALLET_TOP_UP
-  BILL_PAYMENT
-  CASH_IN
-  CASH_OUT
-  AIRTIME_TOPUP
-}
-
-enum TransactionStatus {
-  FAILED
-  COMPLETED
+enum PaymentStatus {
   PENDING
+  COMPLETED
+  FAILED
+  REFUNDED
 }
 
-enum EntryType {
-  DEBIT
-  CREDIT
-}
+model Payment {
+  id            String        @id @default(cuid())
+  orderId       String
+  userId        String
+  amount        Float
+  currency      String        @default("USD")
+  paymentMethod String
+  status        PaymentStatus @default(PENDING)
+  transactionId String?       @unique
+  cardLast4     String?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
 
-enum AuthorizationType {
-  PIN
-  PIN_AND_OTP
-}
-
-enum CurrencyType {
-  ETB
-}
-
-enum AgentType {
-  AGENT     @map("Agent")
-  SUB_AGENT @map("SubAgent")
-}
-
-enum InstitutionType {
-  DEFAULT @map("Default")
-  BANK    @map("Bank")
-  WALLET  @map("Wallet")
-  MFI     @map("MFI")
-}
-
-model Transaction {
-  id                       String            @id @default(cuid())
-  senderName               String?
-  senderPhone              String?
-  senderId                 String?
-  beneficiaryName          String?
-  beneficiaryPhone         String?
-  beneficiaryId            String?
-  beneficiaryAccountNumber String?
-  transactionType          TransactionType?
-  currency                 String?           @default("ETB")
-  serviceFee               Float             @default(0)
-  vat                      Float             @default(0)
-  drrf                     Float             @default(0)
-  totalAmount              Float             @default(0)
-  paidAmount               Float             @default(0)
-  paymentDetails           Json?
-  billRefNo                String?           @unique
-  invoiceURL               String?
-  billReason               String?
-  ftNumber                 String?
-  walletFTNo               String            @unique
-  authorizationType        AuthorizationType @default(PIN)
-  status                   TransactionStatus @default(PENDING)
-  paidDate                 DateTime?
-  institutionCode          String?           @default("DASHTETAA")
-  institutionName          String?
-  createdAt                DateTime          @default(now())
-  updatedAt                DateTime          @updatedAt
-  ledgerEntries            LedgerEntry[]
-
-  @@map("transaction")
-}
-
-model LedgerEntry {
-  id              String        @id @default(cuid())
-  ledgerId        String
-  userId          String // Link to User/Org ID
-  walletId        String? // Link to specific Wallet instance (immutable version)
-  wallet          Wallet?       @relation(fields: [walletId], references: [id], onDelete: SetNull)
-  transactionId   String?
-  transaction     Transaction?  @relation(fields: [transactionId], references: [id], onDelete: SetNull)
-  entryType       EntryType // DEBIT or CREDIT
-  amount          Float         @default(0)
-  balanceAfter    Float         @default(0) // snapshot of balance at this point for performance
-  currency        CurrencyType?
-  description     String?
-  institutionCode String?       @default("DASHTETAA") // To support "all banks" / DFSPs
-  institutionName String?
-  createdAt       DateTime      @default(now())
-
+  @@index([orderId])
   @@index([userId])
-  @@index([walletId])
-  @@index([institutionCode])
-  @@index([createdAt])
-  @@map("ledger_entry")
-}
-
-model Wallet {
-  id              String        @id @default(cuid())
-  walletId        String        @unique
-  phoneNumber     String? // Associated phone number
-  currency        CurrencyType
-  balance         Float         @default(0) @map("walletBalance")
-  status          String        @default("ACTIVE") // ACTIVE, DISABLED
-  createdAt       DateTime      @default(now())
-  updatedAt       DateTime      @updatedAt
-  ledgerEntries   LedgerEntry[]
-
-  @@index([walletId])
   @@index([status])
-  @@map("wallet")
-}
-
-model Payable {
-  id                String   @id @default(cuid())
-  transactionId     String   @unique
-  amount            Float
-  accountNumber     String
-  bankCode          String
-  senderDetail      Json?
-  beneficiaryDetail Json?
-  ftNumber          String?
-  status            String   @default("PENDING") // PENDING, PAID
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
-
-  @@map("payable")
+  @@map("payment")
 }
