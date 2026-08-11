@@ -13,10 +13,9 @@ const userSchema = new Schema<IUser>(
     avatar: { type: String },
     phoneNumber: { type: String },
     address: { type: Schema.Types.ObjectId, ref: "Address" },
-    organization: { type: Schema.Types.ObjectId, ref: "Vendor" },
-    vendorId: { type: Schema.Types.ObjectId, ref: "Vendor", index: true },
+    organization: { type: Schema.Types.ObjectId, ref: "Institution" },
     realm: { type: String, enum: Realm },
-    role: { type: String, enum: Object.values(UserRole) },
+    role: { type: String, enum: UserRole },
     password: { type: String },
     passwordHistory: { type: [String], default: [] },
     passwordChangedAt: { type: Date },
@@ -45,10 +44,9 @@ const userSchema = new Schema<IUser>(
   { timestamps: true },
 );
 
-userSchema.index({ phoneNumber: 1, email: 1, realm: 1, role: 1, vendorId: 1 });
+userSchema.index({ phoneNumber: 1, email: 1, realm: 1, role: 1, organization: 1 });
+userSchema.index({ customerCode: 1 });
 
-const UserModel =
-  (mongoose.models.User as mongoose.Model<IUser>) ||
-  model<IUser>("User", userSchema);
+const UserModel = (mongoose.models.User as mongoose.Model<IUser>) || model<IUser>("User", userSchema);
 
 export default UserModel;
