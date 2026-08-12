@@ -10,11 +10,11 @@
     "packages/database/*"
   ],
   "scripts": {
-    "dev": "concurrently \"yarn workspace @emacare/api-gateway dev\" \"yarn workspace @emacare/auth-service dev\" \"yarn workspace @emacare/product-service dev\" \"yarn workspace @emacare/order-service dev\" \"yarn workspace @emacare/cart-service dev\" \"yarn workspace @emacare/payment-service dev\" \"yarn workspace @emacare/shipping-service dev\" \"yarn workspace @emacare/notification-service dev\"",
-    "build": "yarn workspace @emacare/shared-utils build && yarn workspace @emacare/api-gateway build && yarn workspace @emacare/auth-service build && yarn workspace @emacare/product-service build && yarn workspace @emacare/order-service build && yarn workspace @emacare/cart-service build && yarn workspace @emacare/payment-service build && yarn workspace @emacare/shipping-service build && yarn workspace @emacare/notification-service build",
+    "dev": "concurrently \"npm run dev -w @emacare/api-gateway\" \"npm run dev -w @emacare/auth-service\" \"npm run dev -w @emacare/product-service\" \"npm run dev -w @emacare/order-service\" \"npm run dev -w @emacare/cart-service\" \"npm run dev -w @emacare/payment-service\" \"npm run dev -w @emacare/shipping-service\" \"npm run dev -w @emacare/notification-service\"",
+    "build": "npm run build -w @emacare/shared-utils && npm run build -w @emacare/mongo && npm run build -w @emacare/prisma && npm run build -w @emacare/api-gateway && npm run build -w @emacare/auth-service && npm run build -w @emacare/product-service && npm run build -w @emacare/order-service && npm run build -w @emacare/cart-service && npm run build -w @emacare/payment-service && npm run build -w @emacare/shipping-service && npm run build -w @emacare/notification-service",
     "test": "echo 'Tests running...'",
     "lint": "echo 'Linting...'",
-    "start": "yarn workspace @emacare/api-gateway start"
+    "start": "npm run start -w @emacare/api-gateway"
   },
   "devDependencies": {
     "@types/cors": "^2.8.19",

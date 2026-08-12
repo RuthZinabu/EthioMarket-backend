@@ -22,20 +22,29 @@ const app: Express = express();
 async function initializeApp() {
   try {
     const configs = await initConfig();
-    if (!configs) {
-      logger.error("Failed to load environment configuration. Exiting...");
-      process.exit(1);
-    }
-    globalThis._CONFIG = configs;
+    globalThis._CONFIG = configs || {
+      PORT: Number(process.env.AUTH_SERVICE_PORT || process.env.PORT || 3001),
+      MONGO_DB_URL: process.env.MONGODB_URI || "mongodb://localhost:27017/emacare_auth",
+    };
 
-    await connectDb(globalThis._CONFIG.MONGO_DB_URL!, {});
+    if (globalThis._CONFIG.MONGO_DB_URL) {
+      try {
+        await connectDb(globalThis._CONFIG.MONGO_DB_URL, {});
+      } catch (dbError) {
+        logger.error("MongoDB connection warning in Auth Service", dbError as Error);
+      }
+    }
 
     // Redis initialization with tracking
     if (globalThis._CONFIG.REDIS_URL && globalThis._CONFIG.REDIS_URL !== "undefined") {
-      RedisClient.initialize({ url: globalThis._CONFIG.REDIS_URL });
+      try {
+        RedisClient.initialize({ url: globalThis._CONFIG.REDIS_URL });
+      } catch (redisError) {
+        logger.error("Redis initialization warning in Auth Service", redisError as Error);
+      }
     }
   } catch (error) {
-    console.log("error", error);
+    console.log("error initializing app", error);
   }
 }
 

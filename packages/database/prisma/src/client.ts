@@ -12,21 +12,16 @@ const globalForPrisma = global as unknown as { prisma: PrismaClient };
 /**
  * Vault stores the connection string as POSTGRES_DB_URL; Prisma expects DATABASE_URL.
  */
-const datasourceUrl = process.env.DATABASE_URL || process.env.POSTGRES_DB_URL;
+const datasourceUrl =
+  process.env.DATABASE_URL ||
+  process.env.POSTGRES_DB_URL ||
+  "postgresql://postgres:postgres@localhost:5432/emacare";
 
 const createPrismaClient = () => {
-  if (datasourceUrl) {
-    const pool = new Pool({ connectionString: datasourceUrl });
-    const adapter = new PrismaPg(pool);
-    return new PrismaClient({
-      adapter,
-      log:
-        process.env.NODE_ENV !== "production"
-          ? ["query", "info", "warn", "error"]
-          : ["error", "warn"],
-    });
-  }
+  const pool = new Pool({ connectionString: datasourceUrl });
+  const adapter = new PrismaPg(pool);
   return new PrismaClient({
+    adapter,
     log:
       process.env.NODE_ENV !== "production"
         ? ["query", "info", "warn", "error"]
