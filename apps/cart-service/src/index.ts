@@ -3,7 +3,7 @@ import dotenv from "dotenv";
 import mongoose from "mongoose";
 import { initConfig } from "./config/init-config";
 import { logger } from "@emacare/shared-utils";
-import cartRoutes from "./routes/cart.routes";
+import initRoutes from "./routes";
 
 dotenv.config();
 
@@ -20,7 +20,7 @@ async function initializeApp() {
   const MONGO_URL = process.env.MONGO_DB_URL || "mongodb://localhost:27017/emacare";
 
   app.use(express.json());
-  app.use("/", cartRoutes);
+  initRoutes(app);
 
   try {
     await mongoose.connect(MONGO_URL);

@@ -4,4 +4,5 @@ import { routePrefix } from "@emacare/shared-utils";
 
 export default function initRoutes(app: Express): void {
   app.use(`${routePrefix}/products`, productRoute);
+  app.use("/", productRoute);
 }
