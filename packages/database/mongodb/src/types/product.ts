@@ -1,5 +1,5 @@
 import { Document, Types } from "mongoose";
-import { ProductCategory } from "./enum";
+import { ProductCategory, Status } from "./enum";
 
 export interface IProduct {
   name: string;
@@ -17,6 +17,11 @@ export interface IProduct {
   tags?: string[];
   rating?: number;
   numReviews?: number;
+  status: Status | string;
+  createdBy?: Types.ObjectId;
+  approvedBy?: Types.ObjectId;
+  approvedAt?: Date;
+  rejectedReason?: string;
   createdAt?: Date;
   updatedAt?: Date;
   enabled?: boolean;

@@ -16,7 +16,8 @@
     "test": "echo \"no tests\""
   },
   "dependencies": {
-    "mongoose": "^7.0.0"
+    "mongoose": "^7.0.0",
+    "mongoose-paginate-v2": "^1.9.0"
   }
 }
 

@@ -1,8 +1,9 @@
 import mongoose, { Schema } from "mongoose";
-import { IPermission, PermissionModule } from "../types/permission";
+import paginator from "mongoose-paginate-v2";
+import { PermissionDocument, PermissionModule } from "../types/permission";
 import { Realm } from "../types/enum";
 
-const PermissionSchema = new Schema<IPermission>(
+const PermissionSchema = new Schema<PermissionDocument>(
   {
     name: {
       type: String,
@@ -17,7 +18,8 @@ const PermissionSchema = new Schema<IPermission>(
   { timestamps: true },
 );
 
-export const Permission =
-  (mongoose.models.Permission as mongoose.Model<IPermission>) ||
-  mongoose.model<IPermission>("Permission", PermissionSchema);
+PermissionSchema.plugin(paginator);
+
+export const Permission = mongoose.model<PermissionDocument, mongoose.PaginateModel<PermissionDocument>>("Permission", PermissionSchema);
+
 export default Permission;

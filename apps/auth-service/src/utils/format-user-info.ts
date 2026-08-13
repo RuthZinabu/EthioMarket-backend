@@ -1,10 +1,10 @@
-import { IUser } from "@emacare/mongo/types";
+import { IUser, UserDocument } from "@emacare/mongo/types";
 import { AuthToken, generateJwtToken } from "@emacare/shared-utils";
 import { _UserToken, encryptTokenInfo } from "@emacare/shared-utils";
 import { FlattenMaps } from "mongoose";
 
 export function formatUserInfo(
-  user: Partial<IUser> | FlattenMaps<IUser>,
+  user: Partial<UserDocument> | FlattenMaps<UserDocument>,
   additionalInfo?: Partial<AuthToken>,
   tokenExpiry?: number,
   isMainToken = false,

@@ -1,9 +1,10 @@
 import mongoose, { Schema } from "mongoose";
-import { IPermissionGroup } from "../types/permission-group";
+import paginator from "mongoose-paginate-v2";
+import { PermissionGroupDocument } from "../types/permission-group";
 import { Realm } from "../types/enum";
 import { PermissionAction, PermissionRole } from "../types/permission";
 
-const PermissionGroupSchema = new Schema<IPermissionGroup>(
+const PermissionGroupSchema = new Schema<PermissionGroupDocument>(
   {
     name: { type: String, required: true, trim: true },
     code: { type: String, required: true },
@@ -22,15 +23,12 @@ const PermissionGroupSchema = new Schema<IPermissionGroup>(
     organizationType: { type: String },
     enabled: { type: Boolean, default: true },
     isDeleted: { type: Boolean, default: false },
-    rejectionReason: { type: String },
   },
   { timestamps: true },
 );
 
-export const PermissionGroup =
-  (mongoose.models.PermissionGroup as mongoose.Model<IPermissionGroup>) ||
-  mongoose.model<IPermissionGroup>(
-    "PermissionGroup",
-    PermissionGroupSchema,
-  );
+PermissionGroupSchema.plugin(paginator);
+
+export const PermissionGroup = mongoose.model<PermissionGroupDocument, mongoose.PaginateModel<PermissionGroupDocument>>("PermissionGroup", PermissionGroupSchema);
+
 export default PermissionGroup;

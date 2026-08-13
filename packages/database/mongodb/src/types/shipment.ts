@@ -1,4 +1,4 @@
-import { Document, Types } from "mongoose";
+import { Document } from "mongoose";
 
 export enum ShipmentStatus {
   CREATED = "created",
@@ -32,8 +32,10 @@ export interface IShipment {
   status: ShipmentStatus;
   estimatedDelivery?: Date;
   updates: IShipmentUpdate[];
+  enabled?: boolean;
+  isDeleted?: boolean;
   createdAt?: Date;
   updatedAt?: Date;
 }
 
-export interface ShipmentDocument extends IShipment, Document { }
+export interface ShipmentDocument extends IShipment, Document {}

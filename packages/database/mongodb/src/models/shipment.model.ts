@@ -1,4 +1,5 @@
 import mongoose, { Schema } from "mongoose";
+import paginator from "mongoose-paginate-v2";
 import { ShipmentDocument, ShipmentStatus } from "../types/shipment";
 
 const ShipmentUpdateSchema = new Schema({
@@ -26,15 +27,19 @@ const ShipmentSchema = new Schema<ShipmentDocument>(
       type: String,
       enum: Object.values(ShipmentStatus),
       default: ShipmentStatus.CREATED,
+      required: true,
       index: true,
     },
     estimatedDelivery: { type: Date },
     updates: [ShipmentUpdateSchema],
+    enabled: { type: Boolean, default: true },
+    isDeleted: { type: Boolean, default: false },
   },
   { timestamps: true }
 );
 
-const ShipmentModel =
-  (mongoose.models.Shipment as mongoose.Model<ShipmentDocument>) ||
-  mongoose.model<ShipmentDocument>("Shipment", ShipmentSchema);
+ShipmentSchema.plugin(paginator);
+
+const ShipmentModel = mongoose.model<ShipmentDocument, mongoose.PaginateModel<ShipmentDocument>>("Shipment", ShipmentSchema);
+
 export default ShipmentModel;

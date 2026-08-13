@@ -1,20 +1,7 @@
 import { Document, Types } from "mongoose";
 import { PgPermissions } from "./permission-group";
-import { Realm } from "./enum";
-export { Realm };
-
-export enum UserRole {
-  SuperAdmin = "SuperAdmin",
-  Admin = "Admin",
-  VendorOwner = "VendorOwner",
-  VendorStaff = "VendorStaff",
-  Maker = "Maker",
-  Checker = "Checker",
-  FullAuthorizer = "FullAuthorizer",
-  Customer = "Customer",
-}
-
-export interface IUser extends Document {
+import { Realm, UserRole } from "./enum";
+export interface IUser {
   userCode: string;
   firstName: string;
   lastName: string;
@@ -44,8 +31,14 @@ export interface IUser extends Document {
   isVerified: boolean;
   permissionGroup?: Types.ObjectId;
   additionalPermissions?: PgPermissions[];
+  status: string;
+  approvedBy?: Types.ObjectId;
+  approvedAt?: Date;
+  rejectedReason?: string;
   createdBy?: Types.ObjectId;
   lastModifiedBy?: Types.ObjectId;
   createdAt?: Date;
   updatedAt?: Date;
 }
+
+export interface UserDocument extends IUser, Document {}

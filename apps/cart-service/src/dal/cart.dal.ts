@@ -1,11 +1,12 @@
 import { cartRepository } from "@emacare/mongo/repository";
 
 export async function getCartByUserId(userId: string): Promise<any> {
-  return cartRepository.findOne({ userId });
+  return cartRepository.findOne({ $or: [{ customerId: userId }, { userId }] } as any);
 }
 
 export async function createCart(userId: string): Promise<any> {
   return cartRepository.create({
+    customerId: userId,
     userId,
     items: [],
     totalPrice: 0,
@@ -33,7 +34,7 @@ export async function saveCart(cart: any): Promise<any> {
 
 export async function clearCartByUserId(userId: string): Promise<any> {
   return cartRepository.findOneAndUpdate(
-    { userId },
+    { $or: [{ customerId: userId }, { userId }] } as any,
     {
       $set: {
         items: [],

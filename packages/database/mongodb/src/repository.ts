@@ -10,6 +10,8 @@ import ProductModel from "./models/product.model";
 import OrderModel from "./models/order.model";
 import CartModel from "./models/cart.model";
 import ShipmentModel from "./models/shipment.model";
+import CustomerKycModel from "./models/customerKyc.model";
+import OtpModel from "./models/otp.model";
 
 const userRepository = new MongooseBaseRepository(UserModel);
 const customerRepository = new MongooseBaseRepository(CustomerModel);
@@ -22,6 +24,8 @@ const productRepository = new MongooseBaseRepository(ProductModel);
 const orderRepository = new MongooseBaseRepository(OrderModel);
 const cartRepository = new MongooseBaseRepository(CartModel);
 const shipmentRepository = new MongooseBaseRepository(ShipmentModel);
+const customerKycRepository = new MongooseBaseRepository(CustomerKycModel);
+const otpRepository = new MongooseBaseRepository(OtpModel);
 
 export {
   userRepository,
@@ -35,6 +39,8 @@ export {
   orderRepository,
   cartRepository,
   shipmentRepository,
+  customerKycRepository,
+  otpRepository,
 };
 
 export { connectDb, checkDbHealth, checkReplicaSetStatus, closeDb } from "./lib/db-config";

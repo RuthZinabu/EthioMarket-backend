@@ -44,7 +44,8 @@ export async function processPayment(
     } = req.body;
 
     if (!orderId || !amount) {
-      return res.status(400).json(formatErrorResponse({ message: 'Missing required fields: orderId, amount' }, 400));
+      return res.status(400).json(formatErrorResponse({ 
+      message: 'Missing required fields: orderId, amount' }, 400));
     }
 
     const payment = await paymentDal.createPayment({

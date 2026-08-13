@@ -1,11 +1,12 @@
 import { Document, Types } from "mongoose";
-import { Realm } from "./enum";
+import { Realm, Status } from "./enum";
 import { PermissionAction, PermissionRole, PermissionType } from "./permission";
 
 export interface PgPermissions {
   permission: Types.ObjectId | string | PermissionType;
   actions: PermissionAction[];
 }
+
 export interface PopulatedPgPermissions {
   permissions: {
     permission: {
@@ -31,7 +32,7 @@ export interface PermissionGroupType {
   isDeleted?: boolean;
   createdAt?: Date;
   updatedAt?: Date;
-  rejectionReason?: string;
 }
 
-export interface IPermissionGroup extends Document, PermissionGroupType {}
+export interface IPermissionGroup extends PermissionGroupType {}
+export interface PermissionGroupDocument extends IPermissionGroup, Document {}

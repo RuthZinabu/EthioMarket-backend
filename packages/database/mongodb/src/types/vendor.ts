@@ -1,17 +1,6 @@
 import { Document, Types } from "mongoose";
-
-export enum VendorStatus {
-  PENDING = "PENDING",
-  APPROVED = "APPROVED",
-  REJECTED = "REJECTED",
-  SUSPENDED = "SUSPENDED",
-}
-
-export enum PayoutMethod {
-  BANK_TRANSFER = "BANK_TRANSFER",
-  STRIPE_EXPRESS = "STRIPE_EXPRESS",
-  PAYPAL = "PAYPAL",
-}
+import { PayoutMethod, VendorStatus } from "./enum";
+export { PayoutMethod, VendorStatus };
 
 export interface IVendorPayoutBankDetails {
   accountName: string;
@@ -27,7 +16,7 @@ export interface IVendorBusinessDetail {
   taxId?: string;
 }
 
-export interface IVendor extends Document {
+export interface IVendor {
   storeName: string;
   slug: string;
   description?: string;
@@ -49,7 +38,12 @@ export interface IVendor extends Document {
   enabled: boolean;
   isDeleted: boolean;
   createdBy?: Types.ObjectId;
+  approvedBy?: Types.ObjectId;
+  approvedAt?: Date;
+  rejectedReason?: string;
   lastModifiedBy?: Types.ObjectId;
   createdAt?: Date;
   updatedAt?: Date;
 }
+
+export interface VendorDocument extends IVendor, Document {}

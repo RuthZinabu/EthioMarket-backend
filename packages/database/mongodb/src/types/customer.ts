@@ -26,8 +26,7 @@ export interface ICustomerAddress {
   isDefault?: boolean;
 }
 
-export interface ICustomer extends Document {
-  userCode: string;
+export interface ICustomer {
   customerCode?: string;
   fullName: string;
   email: string;
@@ -36,33 +35,28 @@ export interface ICustomer extends Document {
   sex?: CustomerSex;
   birthDate?: Date;
   nationality?: string;
-
   addresses?: ICustomerAddress[];
   preferredCurrency?: string;
-
-  realm: string; // "Member" / "Customer"
+  realm: string;
   password?: string;
   passwordHistory?: string[];
   passwordChangedAt?: Date;
   isSetPassword?: boolean;
   isVerified?: boolean;
-
   deviceId?: string;
   pushToken?: string;
-
   status: CustomerStatus;
   enabled: boolean;
   isDeleted: boolean;
-
   loginAttemptCount?: number;
   lastLoginAttempt?: Date;
   lastLogin?: Date | null;
-
-  createdBy?: Types.ObjectId;
   lastModifiedBy?: Types.ObjectId;
   createdAt?: Date;
   updatedAt?: Date;
 }
+
+export interface CustomerDocument extends ICustomer, Document {}
 
 export const createCustomerSchema = z.object({
   fullName: z.string().min(2, "Full name is required").trim(),

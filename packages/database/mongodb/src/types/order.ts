@@ -1,6 +1,6 @@
 import { Document, Types } from "mongoose";
-
-export type OrderStatus = "pending" | "paid" | "processing" | "shipped" | "delivered" | "cancelled";
+import { OrderStatus } from "./enum";
+export { OrderStatus };
 
 export interface IOrderItem {
   productId: string;
@@ -12,7 +12,7 @@ export interface IOrderItem {
 }
 
 export interface IOrder {
-  userId: string;
+  customerId?: string | Types.ObjectId;
   items: IOrderItem[];
   subtotal?: number;
   shippingFee?: number;
@@ -31,6 +31,8 @@ export interface IOrder {
   status: OrderStatus;
   paymentId?: string;
   shipmentId?: string;
+  enabled?: boolean;
+  isDeleted?: boolean;
   createdAt?: Date;
   updatedAt?: Date;
 }

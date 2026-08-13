@@ -14,7 +14,7 @@ export async function getOrderById(id: string): Promise<OrderDocument | null> {
 }
 
 export async function getOrdersByUserId(userId: string): Promise<OrderDocument[]> {
-  const docs = await orderRepository.find({ userId });
+  const docs = await orderRepository.find({ customerId: userId } as any);
   return (docs as OrderDocument[]) || [];
 }
 

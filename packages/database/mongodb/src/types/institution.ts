@@ -1,4 +1,5 @@
 import { Document, Types } from "mongoose";
+import { Status } from "./enum";
 
 export enum InstitutionType {
   VENDER = "vender",
@@ -12,7 +13,7 @@ export interface IInstitutionBusinessDetail {
   signedAgreement?: string;
 }
 
-export interface IInstitution extends Document {
+export interface IInstitution {
   name: string;
   institutionType: InstitutionType;
   phoneNumber: string;
@@ -20,11 +21,17 @@ export interface IInstitution extends Document {
   etSwitchCode?: string;
   swiftCode: string;
   logo: string;
+  status: Status | string;
   enabled: boolean;
   isDeleted: boolean;
   createdBy: Types.ObjectId;
+  approvedBy?: Types.ObjectId;
+  approvedAt?: Date;
+  rejectedReason?: string;
   lastModifiedBy: Types.ObjectId;
   createdAt?: Date;
   updatedAt?: Date;
   businessDetail?: IInstitutionBusinessDetail;
 }
+
+export interface InstitutionDocument extends IInstitution, Document {}

@@ -1,4 +1,4 @@
-import { prisma, Payment, PaymentStatus, Currency, Prisma } from "@emacare/prisma";
+import { prisma, Payment, PaymentStatus, Prisma } from "@emacare/prisma";
 
 export async function createPayment(data: Prisma.PaymentCreateInput): Promise<Payment> {
   return prisma.payment.create({

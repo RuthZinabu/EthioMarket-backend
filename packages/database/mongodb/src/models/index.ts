@@ -10,6 +10,7 @@ import PermissionModel from "./permission.model";
 import CustomerKycModel from "./customerKyc.model";
 import VendorModel from "./vendor.model";
 import VendorPayoutModel from "./vendor-payout.model";
+import OtpModel from "./otp.model";
 
 export {
   UserModel,
@@ -24,4 +25,5 @@ export {
   CustomerKycModel,
   VendorModel,
   VendorPayoutModel,
+  OtpModel,
 };

@@ -1,8 +1,10 @@
 import mongoose from "mongoose";
+import paginator from "mongoose-paginate-v2";
 import UserModel from "./user.model";
-import { IInstitution, InstitutionType } from "../types/institution";
+import { InstitutionDocument, InstitutionType } from "../types/institution";
+import { Status } from "../types/enum";
 
-const institutionSchema = new mongoose.Schema<IInstitution>(
+const institutionSchema = new mongoose.Schema<InstitutionDocument>(
   {
     name: { type: String, trim: true },
     institutionType: {
@@ -15,10 +17,22 @@ const institutionSchema = new mongoose.Schema<IInstitution>(
     etSwitchCode: { type: String },
     swiftCode: { type: String },
     logo: { type: String },
+    status: {
+      type: String,
+      enum: Object.values(Status),
+      default: Status.PENDING,
+      required: true,
+    },
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: UserModel.modelName,
     },
+    approvedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: UserModel.modelName,
+    },
+    approvedAt: { type: Date },
+    rejectedReason: { type: String },
     lastModifiedBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: UserModel.modelName,
@@ -34,9 +48,11 @@ const institutionSchema = new mongoose.Schema<IInstitution>(
   },
   { timestamps: true },
 );
+
 institutionSchema.index({ enabled: 1, isDeleted: 1 });
-const InstitutionModel =
-  (mongoose.models.Institution as mongoose.Model<IInstitution>) ||
-  mongoose.model<IInstitution>("Institution", institutionSchema);
+
+institutionSchema.plugin(paginator);
+
+const InstitutionModel = mongoose.model<InstitutionDocument, mongoose.PaginateModel<InstitutionDocument>>("Institution", institutionSchema);
 
 export default InstitutionModel;

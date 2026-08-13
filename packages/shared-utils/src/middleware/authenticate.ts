@@ -29,7 +29,7 @@ export type AuthToken = {
   branchToken?: string;
 };
 
-export type _UserToken = Partial<IUser & AuthToken>;
+export type _UserToken = Partial<IUser & AuthToken & { _id?: any }>;
 
 export interface AuthRequest extends Request {
   _user?: _UserToken;

@@ -65,7 +65,8 @@ export interface PermissionType {
   updatedAt?: Date;
 }
 
-export interface IPermission extends Document, PermissionType {}
+export interface IPermission extends PermissionType {}
+export interface PermissionDocument extends IPermission, Document {}
 
 export interface ICustomPermission extends Document {
   permission: Types.ObjectId;

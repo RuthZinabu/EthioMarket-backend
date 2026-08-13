@@ -1,9 +1,11 @@
 import type { Request, Response } from 'express';
 import { successResponse, formatErrorResponse } from '@emacare/shared-utils';
+import { Currency, OrderStatus } from '@emacare/mongo/types';
 import orderDal from '../dal/order.dal';
 
 export interface CreateOrderRequest {
-  userId: string;
+  userId?: string;
+  customerId?: string;
   items: Array<{ productId: string; vendorId?: string; name: string; quantity: number; price: number; image?: string }>;
   totalAmount: number;
   currency?: string;
@@ -23,19 +25,20 @@ export async function createOrder(
   res: Response
 ): Promise<any> {
   try {
-    const { userId, items, totalAmount, currency, shippingAddress } = req.body;
+    const { userId, customerId, items, totalAmount, currency, shippingAddress } = req.body;
+    const buyerId = customerId || userId;
 
-    if (!userId || !items || items.length === 0 || !totalAmount || !shippingAddress) {
-      return res.status(400).json(formatErrorResponse({ message: 'Missing required fields: userId, items, totalAmount, shippingAddress' }, 400));
+    if (!buyerId || !items || items.length === 0 || !totalAmount || !shippingAddress) {
+      return res.status(400).json(formatErrorResponse({ message: 'Missing required fields: customerId/userId, items, totalAmount, shippingAddress' }, 400));
     }
 
     const order = await orderDal.createOrder({
-      userId,
+      customerId: buyerId,
       items,
       totalAmount,
-      currency: currency || 'USD',
+      currency: Currency.ETB,
       shippingAddress,
-      status: 'pending',
+      status: OrderStatus.PENDING,
     });
 
     return res.status(201).json(successResponse(order, 201));

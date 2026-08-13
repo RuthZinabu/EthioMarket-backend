@@ -1,5 +1,6 @@
 import mongoose, { Schema } from "mongoose";
-import { OrderDocument } from "../types/order";
+import paginator from "mongoose-paginate-v2";
+import { OrderDocument, OrderStatus } from "../types";
 
 const OrderItemSchema = new Schema({
   productId: { type: String, required: true },
@@ -12,7 +13,7 @@ const OrderItemSchema = new Schema({
 
 const OrderSchema = new Schema<OrderDocument>(
   {
-    userId: { type: String, required: true, index: true },
+    customerId: { type: String, index: true },
     items: [OrderItemSchema],
     subtotal: { type: Number },
     shippingFee: { type: Number, default: 0 },
@@ -30,17 +31,21 @@ const OrderSchema = new Schema<OrderDocument>(
     },
     status: {
       type: String,
-      enum: ["pending", "paid", "processing", "shipped", "delivered", "cancelled"],
-      default: "pending",
+      enum: Object.values(OrderStatus),
+      default: OrderStatus.PENDING,
+      required: true,
       index: true,
     },
     paymentId: { type: String },
     shipmentId: { type: String },
+    enabled: { type: Boolean, default: true },
+    isDeleted: { type: Boolean, default: false },
   },
   { timestamps: true }
 );
 
-const OrderModel =
-  (mongoose.models.Order as mongoose.Model<OrderDocument>) ||
-  mongoose.model<OrderDocument>("Order", OrderSchema);
+OrderSchema.plugin(paginator);
+
+const OrderModel = mongoose.model<OrderDocument, mongoose.PaginateModel<OrderDocument>>("Order", OrderSchema);
+
 export default OrderModel;
