@@ -5,12 +5,12 @@ import {
 } from "@emacare/mongo/repository";
 
 import { InstitutionType } from "@emacare/mongo/types/institution";
-import { UserRole, Realm } from "@emacare/mongo/types/user";
 import { VendorStatus, PayoutMethod } from "@emacare/mongo/types/vendor";
 import { logger } from "@emacare/shared-utils";
 
 import { hashedOtpOrPassword } from "../../utils/password-validator";
 import { getAdditionalPermissions } from "../../utils/permission-util";
+import { Realm, UserRole } from "@emacare/mongo/types/enum";
 
 export async function seedInstitution() {
   try {
