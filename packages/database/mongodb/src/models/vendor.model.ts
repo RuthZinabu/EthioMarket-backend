@@ -5,12 +5,13 @@ import { Currency, PayoutMethod, VendorStatus } from "../types/enum";
 
 const VendorSchema = new Schema<VendorDocument>(
   {
-    storeName: { type: String, required: true, trim: true },
-    slug: { type: String, required: true, unique: true, lowercase: true, trim: true },
+    storeName: { type: String, trim: true },
+    ownerName: { type: String, trim: true },
+    slug: { type: String, unique: true, lowercase: true, trim: true },
     description: { type: String },
     logo: { type: String },
     bannerImage: { type: String },
-    contactEmail: { type: String, required: true, lowercase: true, trim: true },
+    contactEmail: { type: String, lowercase: true, trim: true },
     contactPhone: { type: String, required: true, trim: true },
     country: { type: String, required: true, default: "ET" },
     address: { type: String },
@@ -45,8 +46,7 @@ const VendorSchema = new Schema<VendorDocument>(
     },
     rating: { type: Number, default: 0 },
     numReviews: { type: Number, default: 0 },
-    ownerId: { type: Schema.Types.ObjectId, ref: "User" },
-    enabled: { type: Boolean, default: true },
+    enabled: { type: Boolean, default: false },
     isDeleted: { type: Boolean, default: false },
     createdBy: { type: Schema.Types.ObjectId, ref: "User" },
     approvedBy: { type: Schema.Types.ObjectId, ref: "User" },

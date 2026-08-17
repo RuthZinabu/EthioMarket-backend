@@ -23,14 +23,14 @@ const ProductSchema = new Schema<ProductDocument>(
     status: {
       type: String,
       enum: Object.values(Status),
-      default: Status.APPROVED,
+      default: Status.PENDING,
       required: true,
     },
     createdBy: { type: Schema.Types.ObjectId, ref: "User" },
     approvedBy: { type: Schema.Types.ObjectId, ref: "User" },
     approvedAt: { type: Date },
     rejectedReason: { type: String },
-    enabled: { type: Boolean, default: true },
+    enabled: { type: Boolean, default: false },
     isDeleted: { type: Boolean, default: false },
   },
   { timestamps: true }

@@ -1,14 +1,14 @@
 export enum ProductCategory {
-    ELECTRONICS = "electronics",
-    FASHION = "fashion",
-    BEAUTY = "beauty",
-    SPORTS = "sports",
-    BOOKS = "books",
-    FOOD = "food",
-    SPICY = "spicy",
-    HONEY = "honey",
-    CLOTH = "cloth",
-    OTHER = "other"
+  ELECTRONICS = "electronics",
+  FASHION = "fashion",
+  BEAUTY = "beauty",
+  SPORTS = "sports",
+  BOOKS = "books",
+  FOOD = "food",
+  SPICY = "spicy",
+  HONEY = "honey",
+  CLOTH = "cloth",
+  OTHER = "other"
 }
 
 export enum Realm {
@@ -51,22 +51,22 @@ export enum ActionType {
   APPROVE = "APPROVE",
   REJECT = "REJECT",
 }
-  
+
 export enum KYCPurpose {
   WALLET_OPENING = "wallet_opening",
   LEVEL_UPGRADE = "level_upgrade",
 }
 
-export enum OrderStatus{
-  PENDING = "pending", 
-  PAID = "paid", 
-  PROCESSING = "processing", 
-  SHIPPED = "shipped", 
-  DELIVERED = "delivered", 
+export enum OrderStatus {
+  PENDING = "pending",
+  PAID = "paid",
+  PROCESSING = "processing",
+  SHIPPED = "shipped",
+  DELIVERED = "delivered",
   CANCELLED = "cancelled"
 }
 
-export enum Currency{
+export enum Currency {
   ETB = "ETB",
   USD = "USD",
 }

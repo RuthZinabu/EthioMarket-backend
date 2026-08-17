@@ -18,11 +18,12 @@ export interface IVendorBusinessDetail {
 
 export interface IVendor {
   storeName: string;
-  slug: string;
+  ownerName?: string;
+  slug?: string;
   description?: string;
   logo?: string;
   bannerImage?: string;
-  contactEmail: string;
+  contactEmail?: string;
   contactPhone: string;
   country: string;
   address?: string;
@@ -34,7 +35,6 @@ export interface IVendor {
   businessDetail?: IVendorBusinessDetail;
   rating?: number;
   numReviews?: number;
-  ownerId?: Types.ObjectId;
   enabled: boolean;
   isDeleted: boolean;
   createdBy?: Types.ObjectId;
