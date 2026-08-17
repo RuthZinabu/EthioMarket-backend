@@ -1,42 +1,31 @@
 import type { Request, Response } from 'express';
 import { successResponse, formatErrorResponse } from '@emacare/shared-utils';
 import { Currency, OrderStatus } from '@emacare/mongo/types';
+import { CreateOrderRequestSchema, type CreateOrderInput } from '../validations/orderSchema';
 import orderDal from '../dal/order.dal';
 
-export interface CreateOrderRequest {
-  userId?: string;
-  customerId?: string;
-  items: Array<{ productId: string; vendorId?: string; name: string; quantity: number; price: number; image?: string }>;
-  totalAmount: number;
-  currency?: string;
-  shippingAddress: {
-    fullName: string;
-    street: string;
-    city: string;
-    state?: string;
-    country: string;
-    zipCode: string;
-    phone?: string;
-  };
-}
-
 export async function createOrder(
-  req: Request<{}, {}, CreateOrderRequest>,
+  req: Request<{}, {}, CreateOrderInput>,
   res: Response
 ): Promise<any> {
   try {
-    const { userId, customerId, items, totalAmount, currency, shippingAddress } = req.body;
-    const buyerId = customerId || userId;
-
-    if (!buyerId || !items || items.length === 0 || !totalAmount || !shippingAddress) {
-      return res.status(400).json(formatErrorResponse({ message: 'Missing required fields: customerId/userId, items, totalAmount, shippingAddress' }, 400));
+    const parseResult = CreateOrderRequestSchema.safeParse(req.body);
+    if (!parseResult.success) {
+      return res.status(400).json(
+        formatErrorResponse(
+          { message: 'Validation failed', errors: parseResult.error.issues },
+          400
+        )
+      );
     }
 
+    const { customerId, items, totalAmount, currency, shippingAddress } = parseResult.data;
+
     const order = await orderDal.createOrder({
-      customerId: buyerId,
+      customerId,
       items,
       totalAmount,
-      currency: Currency.ETB,
+      currency: (currency as Currency) || Currency.ETB,
       shippingAddress,
       status: OrderStatus.PENDING,
     });
