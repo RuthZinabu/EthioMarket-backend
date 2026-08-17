@@ -1,39 +1,69 @@
-import express from "express";
 import dotenv from "dotenv";
-import mongoose from "mongoose";
+dotenv.config({ path: "../../.env" });
+dotenv.config({ path: ".env" });
+import express, { type Express } from "express";
+import cors from "cors";
+import helmet from "helmet";
 import { initConfig } from "./config/init-config";
-import { logger } from "@emacare/shared-utils";
-import initRoutes from "./routes";
+import { corsOptions, errorHandler, logger, RedisClient } from "@emacare/shared-utils";
+import router from "./routes/index";
+import { closeDb, connectDb } from "@emacare/mongo/repository";
 
-dotenv.config();
-
-const app = express();
+const app: Express = express();
 
 async function initializeApp() {
   const configs = await initConfig();
-
-  (globalThis as any)._CONFIG = configs ?? {
-    PORT: Number(process.env.PORT ?? 3004),
-  };
-
-  const PORT = (globalThis as any)._CONFIG?.PORT ?? process.env.PORT ?? 3004;
-  const MONGO_URL = process.env.MONGO_DB_URL || "mongodb://localhost:27017/emacare";
-
-  app.use(express.json());
-  initRoutes(app);
-
-  try {
-    await mongoose.connect(MONGO_URL);
-    logger.info("Connected to MongoDB for Cart Service");
-  } catch (err) {
-    logger.warn("Could not connect to MongoDB for Cart Service", err);
+  if (!configs) {
+    logger.error("Failed to load environment configuration. Exiting...");
+    process.exit(1);
   }
-
-  app.listen(PORT, () => {
-    logger.info(`🛒 Cart Service running on http://localhost:${PORT}`);
-  });
+  globalThis._CONFIG = configs;
+  if (globalThis._CONFIG.MONGO_DB_URL) {
+    await connectDb(globalThis._CONFIG.MONGO_DB_URL, {});
+  }
+  if (globalThis._CONFIG.REDIS_URL && globalThis._CONFIG.REDIS_URL !== "undefined") {
+    RedisClient.initialize({ url: globalThis._CONFIG.REDIS_URL });
+  }
 }
 
-initializeApp();
+process.on("uncaughtException", (error) => {
+  logger.error("UNCAUGHT EXCEPTION!  Shutting down...", error);
+  process.exit(1);
+});
+
+process.on("unhandledRejection", (reason, promise) => {
+  logger.error("UNHANDLED REJECTION!  Shutting down...", { reason, promise });
+  process.exit(1);
+});
+
+// Start server
+async function startServer() {
+  try {
+    await initializeApp(); // Critical setup first
+
+    process.on("SIGTERM", async () => {
+      await closeDb();
+      process.exit(0);
+    });
+
+    app.use(cors(corsOptions));
+    app.use(helmet());
+    app.disable("x-powered-by");
+    app.use(express.json());
+    router(app);
+
+    app.use(errorHandler);
+    const PORT = globalThis._CONFIG.PORT || process.env.PORT || 3004;
+    const ENVIRONMENT = process.env.NODE_ENV || "development";
+    app.listen(PORT, () => {
+      logger.info(`🛒 Cart Microservice listening on port ${PORT} in ${ENVIRONMENT} mode.`);
+    });
+  } catch (error) {
+    logger.error("Failed to initialize and start server:", error as Error);
+    process.exit(1);
+  }
+}
+
+startServer();
 
 export default app;

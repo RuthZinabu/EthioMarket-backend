@@ -107,6 +107,7 @@ services:
       MONGODB_URI: mongodb://admin:password@mongodb:27017/emacare
     depends_on:
       - mongodb
+      - seaweedfs
     networks:
       - emacare-network
 
@@ -193,10 +194,25 @@ services:
     networks:
       - emacare-network
 
+  # SeaweedFS for Distributed Object Storage
+  seaweedfs:
+    image: chrislusf/seaweedfs:latest
+    container_name: emacare-seaweedfs
+    command: "server -dir=/data -filer=true"
+    ports:
+      - '8888:8888'
+      - '9333:9333'
+      - '8080:8080'
+    volumes:
+      - seaweedfs_data:/data
+    networks:
+      - emacare-network
+
 volumes:
   mongodb_data:
   redis_data:
   vault_data:
+  seaweedfs_data:
 
 networks:
   emacare-network:

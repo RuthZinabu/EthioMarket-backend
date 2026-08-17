@@ -12,13 +12,6 @@ export interface EnvConfig {
   SEAWEEDFS_PUBLIC_URL: string;
   SEAWEEDFS_FOLDER_NAME: string;
   POSTGRES_DB_URL?: string;
-  SMS_URL: string;
-  SMS_SENDER: string;
-  SMS_TOKEN: string;
-  RABBIT_MQ_HOST: string;
-  RABBIT_MQ_PORT: number;
-  RABBIT_MQ_USERNAME: string;
-  RABBIT_MQ_PASSWORD: string;
-  RABBIT_MQ_VHOST: string;
   NODE_ENV: string;
+  PRODUCT_SERVICE_PORT: number;
 }

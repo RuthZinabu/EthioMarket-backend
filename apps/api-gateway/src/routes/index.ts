@@ -1,7 +1,7 @@
 import { type Express } from 'express';
 import gatewayRoutes from './gateway.routes';
 
-export default function initRoutes(app: Express): void {
+export default function router(app: Express): void {
   app.use('/', gatewayRoutes);
 }
 export { gatewayRoutes };

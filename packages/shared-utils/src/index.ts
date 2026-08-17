@@ -43,4 +43,3 @@ export * from "./assets/file-validator";
 declare global {
   var _CONFIG: any;
 }
-

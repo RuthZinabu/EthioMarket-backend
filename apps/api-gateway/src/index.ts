@@ -1,34 +1,69 @@
-import express from 'express';
-import cors from 'cors';
-import dotenv from 'dotenv';
-import initRoutes from './routes';
-import { services } from './routes/gateway.routes';
+import dotenv from "dotenv";
+dotenv.config({ path: "../../.env" });
+dotenv.config({ path: ".env" });
+import express, { type Express } from "express";
+import cors from "cors";
+import helmet from "helmet";
+import { initConfig } from "./config/init-config";
+import { corsOptions, errorHandler, logger, RedisClient } from "@emacare/shared-utils";
+import router from "./routes/index";
+import { closeDb, connectDb } from "@emacare/mongo/repository";
 
-dotenv.config();
+const app: Express = express();
 
-const app = express();
-const PORT = process.env.PORT || 3000;
+async function initializeApp() {
+  const configs = await initConfig();
+  if (!configs) {
+    logger.error("Failed to load environment configuration. Exiting...");
+    process.exit(1);
+  }
+  globalThis._CONFIG = configs;
+  if (globalThis._CONFIG.MONGO_DB_URL) {
+    await connectDb(globalThis._CONFIG.MONGO_DB_URL, {});
+  }
+  if (globalThis._CONFIG.REDIS_URL && globalThis._CONFIG.REDIS_URL !== "undefined") {
+    RedisClient.initialize({ url: globalThis._CONFIG.REDIS_URL });
+  }
+}
 
-// Middleware
-app.use(express.json());
-app.use(cors());
-
-// Initialize routes
-initRoutes(app);
-
-// Error handling middleware
-app.use((err: any, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
-  console.error('API Gateway Error:', err);
-  res.status(500).json({
-    success: false,
-    error: 'Internal Server Error',
-    message: err.message,
-  });
+process.on("uncaughtException", (error) => {
+  logger.error("UNCAUGHT EXCEPTION!  Shutting down...", error);
+  process.exit(1);
 });
 
-app.listen(PORT, () => {
-  console.log(`🚀 API Gateway running on http://localhost:${PORT}`);
-  console.log('Connected services:', services);
+process.on("unhandledRejection", (reason, promise) => {
+  logger.error("UNHANDLED REJECTION!  Shutting down...", { reason, promise });
+  process.exit(1);
 });
+
+// Start server
+async function startServer() {
+  try {
+    await initializeApp(); // Critical setup first
+
+    process.on("SIGTERM", async () => {
+      await closeDb();
+      process.exit(0);
+    });
+
+    app.use(cors(corsOptions));
+    app.use(helmet());
+    app.disable("x-powered-by");
+    app.use(express.json());
+    router(app);
+
+    app.use(errorHandler);
+    const PORT = globalThis._CONFIG.PORT || process.env.PORT || 3000;
+    const ENVIRONMENT = process.env.NODE_ENV || "development";
+    app.listen(PORT, () => {
+      logger.info(`🚀 API Gateway listening on port ${PORT} in ${ENVIRONMENT} mode.`);
+    });
+  } catch (error) {
+    logger.error("Failed to initialize and start server:", error as Error);
+    process.exit(1);
+  }
+}
+
+startServer();
 
 export default app;

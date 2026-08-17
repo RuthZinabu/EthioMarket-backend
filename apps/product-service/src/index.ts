@@ -1,31 +1,67 @@
-import express from "express";
 import dotenv from "dotenv";
-import mongoose from "mongoose";
-import { logger } from "@emacare/shared-utils";
+dotenv.config({ path: "../../.env" });
+dotenv.config({ path: ".env" });
+import express, { type Express } from "express";
+import cors from "cors";
+import helmet from "helmet";
+import { initConfig } from "./configs/init-config";
+import { corsOptions, errorHandler, logger, RedisClient } from "@emacare/shared-utils";
+import router from "./routes/index";
+import { closeDb, connectDb } from "@emacare/mongo/repository";
 
-import initRoutes from "./routes/index";
+const app: Express = express();
 
-dotenv.config();
+async function initializeApp() {
+  const configs = await initConfig();
+  if (!configs) {
+    logger.error("Failed to load environment configuration. Exiting...");
+    process.exit(1);
+  }
+  globalThis._CONFIG = configs;
+  if (globalThis._CONFIG.MONGO_DB_URL) {
+    await connectDb(globalThis._CONFIG.MONGO_DB_URL, {});
+  }
+  if (globalThis._CONFIG.REDIS_URL && globalThis._CONFIG.REDIS_URL !== "undefined") {
+    RedisClient.initialize({ url: globalThis._CONFIG.REDIS_URL });
+  }
+}
 
-const app = express();
-const PORT = process.env.PORT || 3002;
-const MONGO_URL = process.env.MONGO_DB_URL || "mongodb://localhost:27017/emacare";
+process.on("uncaughtException", (error) => {
+  logger.error("UNCAUGHT EXCEPTION!  Shutting down...", error);
+  process.exit(1);
+});
 
-app.use(express.json());
+process.on("unhandledRejection", (reason, promise) => {
+  logger.error("UNHANDLED REJECTION!  Shutting down...", { reason, promise });
+  process.exit(1);
+});
 
-initRoutes(app);
-
+// Start server
 async function startServer() {
   try {
-    await mongoose.connect(MONGO_URL);
-    logger.info("Connected to MongoDB for Product Service");
-  } catch (err) {
-    logger.warn("Could not connect to MongoDB for Product Service", err);
-  }
+    await initializeApp(); // Critical setup first
 
-  app.listen(PORT, () => {
-    logger.info(`📦 Product Service running on http://localhost:${PORT}`);
-  });
+    process.on("SIGTERM", async () => {
+      await closeDb();
+      process.exit(0);
+    });
+
+    app.use(cors(corsOptions));
+    app.use(helmet());
+    app.disable("x-powered-by");
+    app.use(express.json());
+    router(app);
+
+    app.use(errorHandler);
+    const PORT = globalThis._CONFIG.PORT || process.env.PORT || 3002;
+    const ENVIRONMENT = process.env.NODE_ENV || "development";
+    app.listen(PORT, () => {
+      logger.info(`📦 Product Microservice listening on port ${PORT} in ${ENVIRONMENT} mode.`);
+    });
+  } catch (error) {
+    logger.error("Failed to initialize and start server:", error as Error);
+    process.exit(1);
+  }
 }
 
 startServer();
