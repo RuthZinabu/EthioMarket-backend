@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { CustomerSex, CustomerStatus } from "@emacare/mongo/types";
+import { CustomerSex, CustomerStatus, Currency } from "@emacare/mongo/types";
 
 export const CustomerAddressSchema = z.object({
   label: z.string().default("Home").optional(),
@@ -21,7 +21,7 @@ export const CreateCustomerSchema = z.object({
   birthDate: z.coerce.date().optional(),
   nationality: z.string().optional(),
   addresses: z.array(CustomerAddressSchema).optional(),
-  preferredCurrency: z.string().default("USD").optional(),
+  preferredCurrency: z.nativeEnum(Currency).default(Currency.ETB).optional(),
   status: z.nativeEnum(CustomerStatus).default(CustomerStatus.ACTIVE).optional(),
   enabled: z.boolean().default(true).optional(),
 });
