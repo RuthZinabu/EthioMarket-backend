@@ -1,17 +1,17 @@
 import mongoose, { Schema } from "mongoose";
 import paginator from "mongoose-paginate-v2";
 import { ProductDocument } from "../types/product";
-import { Status } from "../types/enum";
+import { Currency, Status } from "../types/enum";
 
 const ProductSchema = new Schema<ProductDocument>(
   {
     name: { type: String, required: true, trim: true },
-    vendorId: { type: Schema.Types.ObjectId, ref: "Vendor", index: true },
+    vendorId: { type: Schema.Types.ObjectId, ref: "Vendor", required: true, index: true },
     category: { type: String, required: true, index: true },
     description: { type: String },
     price: { type: Number, required: true },
     discountPrice: { type: Number },
-    currency: { type: String, default: "USD" },
+    currency: { type: String, default: Currency.ETB },
     stock: { type: Number, required: true, default: 0 },
     sku: { type: String, trim: true },
     image: { type: String },

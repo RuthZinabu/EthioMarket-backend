@@ -1,7 +1,7 @@
 import mongoose, { Schema } from "mongoose";
 import paginator from "mongoose-paginate-v2";
 import { VendorDocument } from "../types/vendor";
-import { Currency, PayoutMethod, VendorStatus } from "../types/enum";
+import { Currency, PayoutMethod, VendorStatus, VendorType } from "../types/enum";
 
 const VendorSchema = new Schema<VendorDocument>(
   {
@@ -22,6 +22,12 @@ const VendorSchema = new Schema<VendorDocument>(
       required: true,
     },
     isVerified: { type: Boolean, default: false },
+    vendorType: {
+      type: String,
+      enum: Object.values(VendorType),
+      required: true,
+      default: VendorType.IN_HOUSE,
+    },
     commissionRate: { type: Number, default: 0.10 },
     payoutMethod: {
       type: String,

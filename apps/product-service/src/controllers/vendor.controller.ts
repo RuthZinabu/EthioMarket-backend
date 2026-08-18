@@ -80,10 +80,11 @@ export async function getAllVendors(req: Request, res: Response) {
       );
     }
 
-    const { status, country, search, page = 1, limit = 10 } = parseResult.data;
+    const { status, vendorType, country, search, page = 1, limit = 10 } = parseResult.data;
     const filter: Record<string, any> = {};
 
     if (status) filter.status = status;
+    if (vendorType) filter.vendorType = vendorType;
     if (country) filter.country = country;
     if (search) {
       filter.$or = [

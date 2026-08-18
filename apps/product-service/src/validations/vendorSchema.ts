@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { VendorStatus, PayoutMethod, Currency } from "@emacare/mongo/types";
+import { VendorStatus, PayoutMethod, Currency, VendorType } from "@emacare/mongo/types";
 
 export const VendorPayoutBankDetailsSchema = z.object({
   accountName: z.string().min(1, "Account name is required"),
@@ -28,6 +28,7 @@ export const CreateVendorSchema = z.object({
   address: z.string().optional(),
   status: z.nativeEnum(VendorStatus).default(VendorStatus.PENDING).optional(),
   isVerified: z.boolean().default(false).optional(),
+  vendorType: z.nativeEnum(VendorType).default(VendorType.IN_HOUSE),
   commissionRate: z.number().nonnegative().default(0.10).optional(),
   payoutMethod: z.nativeEnum(PayoutMethod).default(PayoutMethod.BANK_TRANSFER).optional(),
   payoutBankDetails: VendorPayoutBankDetailsSchema.optional(),
@@ -44,6 +45,7 @@ export const ApproveVendorSchema = z.object({
 
 export const VendorQuerySchema = z.object({
   status: z.nativeEnum(VendorStatus).optional(),
+  vendorType: z.nativeEnum(VendorType).optional(),
   country: z.string().optional(),
   search: z.string().optional(),
   page: z.coerce.number().int().positive().optional().default(1),

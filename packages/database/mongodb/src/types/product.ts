@@ -3,7 +3,7 @@ import { ProductCategory, Status } from "./enum";
 
 export interface IProduct {
   name: string;
-  vendorId?: Types.ObjectId;
+  vendorId: Types.ObjectId;
   category: ProductCategory;
   description?: string;
   price: number;

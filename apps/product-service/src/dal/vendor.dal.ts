@@ -18,10 +18,19 @@ export async function createVendor(data: Partial<IVendor>): Promise<VendorDocume
   return result as unknown as VendorDocument | null;
 }
 
-export async function getVendorById(id: string): Promise<VendorDocument | null> {
-  const filter = mongoose.Types.ObjectId.isValid(id)
-    ? { _id: new mongoose.Types.ObjectId(id), isDeleted: false }
-    : { slug: id, isDeleted: false };
+export async function getVendorById(id: string | mongoose.Types.ObjectId): Promise<VendorDocument | null> {
+  if (!id) return null;
+  const idStr = String(id).trim();
+  const isObjId = mongoose.Types.ObjectId.isValid(idStr);
+  const filter = isObjId
+    ? {
+        $or: [
+          { _id: new mongoose.Types.ObjectId(idStr) },
+          { slug: idStr },
+        ],
+        isDeleted: { $ne: true },
+      }
+    : { slug: idStr, isDeleted: { $ne: true } };
   const result = await vendorRepository.findOne(filter);
   return result as unknown as VendorDocument | null;
 }

@@ -1,9 +1,12 @@
 import type { Request, Response } from "express";
 import { formatErrorResponse, successResponse } from "@emacare/shared-utils";
+import { Status } from "@emacare/mongo/types";
 import productDal from "../dal/product.dal";
+import vendorDal from "../dal/vendor.dal";
 import {
   CreateProductSchema,
   UpdateProductSchema,
+  ApproveProductSchema,
   ProductQuerySchema,
 } from "../validations/productSchema";
 import { ExpressFile, handleProductImageUploads, uploadFileToSeaweed} from "../utils/uploadFile";
@@ -25,6 +28,13 @@ export async function createProduct(req: Request, res: Response) {
           { message: "Validation failed", errors: parseResult.error.issues },
           400
         )
+      );
+    }
+
+    const vendor = await vendorDal.getVendorById(parseResult.data.vendorId);
+    if (!vendor) {
+      return res.status(404).json(
+        formatErrorResponse({ message: "Vendor does not exist" }, 404)
       );
     }
 
@@ -127,6 +137,15 @@ export async function updateProduct(req: Request, res: Response) {
       );
     }
 
+    if (parseResult.data.vendorId) {
+      const vendor = await vendorDal.getVendorById(parseResult.data.vendorId);
+      if (!vendor) {
+        return res.status(404).json(
+          formatErrorResponse({ message: "Vendor does not exist" }, 404)
+        );
+      }
+    }
+
     const updatedProduct = await productDal.updateProduct(id, {
       ...(parseResult.data as any),
       updatedAt: new Date(),
@@ -174,6 +193,50 @@ export async function updateInventory(req: Request, res: Response) {
   }
 }
 
+export async function approveProduct(req: Request, res: Response) {
+  try {
+    const { id } = req.params;
+    if (!id) {
+      return res.status(400).json(formatErrorResponse({ message: "Product id or sku is required" }, 400));
+    }
+
+    const parseResult = ApproveProductSchema.safeParse(req.body);
+    if (!parseResult.success) {
+      return res.status(400).json(
+        formatErrorResponse(
+          { message: "Validation failed", errors: parseResult.error.issues },
+          400
+        )
+      );
+    }
+
+    const { status, rejectedReason, approvedBy } = parseResult.data;
+    const updateData: Record<string, any> = {
+      status,
+      enabled: status === Status.APPROVED,
+      updatedAt: new Date(),
+    };
+
+    if (status === Status.APPROVED) {
+      updateData.approvedAt = new Date();
+      if (approvedBy) {
+        updateData.approvedBy = approvedBy;
+      }
+    } else if (status === Status.REJECTED) {
+      updateData.rejectedReason = rejectedReason;
+    }
+
+    const product = await productDal.updateProduct(id, updateData);
+    if (!product) {
+      return res.status(404).json(formatErrorResponse({ message: "Product not found" }, 404));
+    }
+
+    return res.json(successResponse(product));
+  } catch (error) {
+    return res.status(500).json(formatErrorResponse(error));
+  }
+}
+
 export async function deleteProduct(req: Request, res: Response) {
   try {
     const { id } = req.params;
@@ -200,5 +263,6 @@ export default {
   getProductById,
   updateProduct,
   updateInventory,
+  approveProduct,
   deleteProduct,
 };

@@ -1,7 +1,5 @@
 import { Document, Types } from "mongoose";
-import { PayoutMethod, VendorStatus } from "./enum";
-export { PayoutMethod, VendorStatus };
-
+import { PayoutMethod, VendorStatus, VendorType } from "./enum";
 export interface IVendorPayoutBankDetails {
   accountName: string;
   accountNumber: string;
@@ -29,6 +27,7 @@ export interface IVendor {
   address?: string;
   status: VendorStatus;
   isVerified: boolean;
+  vendorType:VendorType
   commissionRate: number;
   payoutMethod: PayoutMethod;
   payoutBankDetails?: IVendorPayoutBankDetails;

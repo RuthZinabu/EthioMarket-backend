@@ -3,20 +3,22 @@ import type { IProduct, ProductDocument } from "@emacare/mongo/types";
 import mongoose, { FilterQuery, QueryOptions } from "mongoose";
 
 export async function createProduct(data: Partial<IProduct>): Promise<ProductDocument | null> {
-  return productRepository.create(data as any);
+  const result = await productRepository.create(data as any);
+  return result as unknown as ProductDocument | null;
 }
 
 export async function getProductById(id: string): Promise<ProductDocument | null> {
   const filter = mongoose.Types.ObjectId.isValid(id)
     ? { _id: new mongoose.Types.ObjectId(id), isDeleted: false }
     : { sku: id, isDeleted: false };
-  return productRepository.findOne(filter);
+  const result = await productRepository.findOne(filter);
+  return result as unknown as ProductDocument | null;
 }
 
 export async function getProductsFiltered(query: FilterQuery<ProductDocument>): Promise<ProductDocument[]> {
   const filter = { ...query, isDeleted: false };
   const docs = await productRepository.find(filter);
-  return (docs as ProductDocument[]) || [];
+  return (docs as unknown as ProductDocument[]) || [];
 }
 
 export async function getProductsPaginated(
@@ -31,7 +33,7 @@ export async function getProductsPaginated(
   const totalPages = Math.ceil(result.total / limit) || 1;
   return {
     total: result.total,
-    docs: (result.docs as ProductDocument[]) || [],
+    docs: (result.docs as unknown as ProductDocument[]) || [],
     page,
     limit,
     totalPages,
@@ -46,7 +48,8 @@ export async function updateProduct(
     ? { _id: new mongoose.Types.ObjectId(id), isDeleted: false }
     : { sku: id, isDeleted: false };
 
-  return productRepository.findOneAndUpdate(filter, { $set: updateData });
+  const result = await productRepository.findOneAndUpdate(filter, { $set: updateData });
+  return result as unknown as ProductDocument | null;
 }
 
 export async function softDeleteProduct(id: string): Promise<ProductDocument | null> {
@@ -54,7 +57,8 @@ export async function softDeleteProduct(id: string): Promise<ProductDocument | n
     ? { _id: new mongoose.Types.ObjectId(id) }
     : { sku: id };
 
-  return productRepository.deleteOne(filter);
+  const result = await productRepository.deleteOne(filter);
+  return result as unknown as ProductDocument | null;
 }
 
 export default {

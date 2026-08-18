@@ -5,12 +5,11 @@ import {
 } from "@emacare/mongo/repository";
 
 import { InstitutionType } from "@emacare/mongo/types/institution";
-import { VendorStatus, PayoutMethod } from "@emacare/mongo/types/vendor";
 import { logger } from "@emacare/shared-utils";
 
 import { hashedOtpOrPassword } from "../../utils/password-validator";
 import { getAdditionalPermissions } from "../../utils/permission-util";
-import { Realm, UserRole } from "@emacare/mongo/types/enum";
+import { PayoutMethod, Realm, UserRole, VendorStatus, VendorType } from "@emacare/mongo/types/enum";
 
 export async function seedInstitution() {
   try {
@@ -55,6 +54,7 @@ export async function seedInstitution() {
         country: "ET",
         status: VendorStatus.APPROVED,
         isVerified: true,
+        vendorType: VendorType.IN_HOUSE,
         commissionRate: 0.10,
         payoutMethod: PayoutMethod.BANK_TRANSFER,
         payoutBankDetails: {

@@ -3,7 +3,7 @@ import { ProductCategory, Status ,Currency} from "@emacare/mongo/types";
 
 export const CreateProductSchema = z.object({
   name: z.string().min(1, "Product name is required").trim(),
-  vendorId: z.string().optional(),
+  vendorId: z.string().min(1, "Vendor ID is required"),
   category: z.nativeEnum(ProductCategory),
   description: z.string().optional(),
   price: z.coerce.number().nonnegative("Price must be non-negative"),
@@ -21,6 +21,12 @@ export const CreateProductSchema = z.object({
 
 export const UpdateProductSchema = CreateProductSchema.partial();
 
+export const ApproveProductSchema = z.object({
+  status: z.nativeEnum(Status),
+  rejectedReason: z.string().optional(),
+  approvedBy: z.string().optional(),
+});
+
 export const ProductQuerySchema = z.object({
   category: z.nativeEnum(ProductCategory).optional(),
   vendorId: z.string().optional(),
@@ -34,4 +40,5 @@ export const ProductQuerySchema = z.object({
 
 export type CreateProductInput = z.infer<typeof CreateProductSchema>;
 export type UpdateProductInput = z.infer<typeof UpdateProductSchema>;
+export type ApproveProductInput = z.infer<typeof ApproveProductSchema>;
 export type ProductQueryInput = z.infer<typeof ProductQuerySchema>;

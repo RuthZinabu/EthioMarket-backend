@@ -101,4 +101,8 @@ export enum UserRole {
   FullAuthorizer = "FullAuthorizer",
   Customer = "Customer",
 }
+export enum VendorType {
+  IN_HOUSE = "IN_HOUSE",
+  EXTERNAL = "EXTERNAL", 
+}
 

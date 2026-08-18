@@ -30,6 +30,8 @@ router.post("/upload", upload.single("file"), productController.uploadProductAss
 
 router.patch("/update-inventory/:id", productController.updateInventory);
 
+router.patch("/updateStatus/:id", productController.approveProduct);
+
 router.put("/update/:id", productUploadFields, productController.updateProduct);
 router.delete("/delete/:id", productController.deleteProduct);
 
