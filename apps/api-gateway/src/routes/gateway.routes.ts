@@ -25,22 +25,20 @@ const serviceRoutes = [
 ];
 
 serviceRoutes.forEach(({ path, target }) => {
-  // Mount proxy under user-configured base path `/ethi.commerce.api.v1`
+  // Mount proxy under base path `/ethio.commerce.api.v1`
   router.use(`${routePrefix}/${path}`, createProxyMiddleware({
     target,
     changeOrigin: true,
-    pathRewrite: { [`^${routePrefix}/${path}`]: '' },
   }));
 
   // Mount fallback proxy under `/api`
   router.use(`/api/${path}`, createProxyMiddleware({
     target,
     changeOrigin: true,
-    pathRewrite: { [`^/api/${path}`]: '' },
+    pathRewrite: { [`^/api/${path}`]: `${routePrefix}/${path}` },
   }));
 });
 
-// Health check endpoint
 router.get('/health', (_req: Request, res: Response) => {
   res.json({
     status: 'API Gateway is running',
