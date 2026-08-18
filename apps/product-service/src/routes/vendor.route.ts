@@ -25,7 +25,7 @@ router.post("/upload", upload.single("file"), vendorController.uploadVendorAsset
 
 router.get("/get/:id", vendorController.getVendorById);
 
-router.patch("/update/:id", vendorUploadFields, vendorController.updateVendor);
+router.put("/update/:id", vendorUploadFields, vendorController.updateVendor);
 
 router.patch("/approve/:id", vendorController.approveVendor);
 

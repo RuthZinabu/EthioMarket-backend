@@ -46,7 +46,7 @@ const VendorSchema = new Schema<VendorDocument>(
     },
     rating: { type: Number, default: 0 },
     numReviews: { type: Number, default: 0 },
-    enabled: { type: Boolean, default: false },
+    enabled: { type: Boolean, default: true },
     isDeleted: { type: Boolean, default: false },
     createdBy: { type: Schema.Types.ObjectId, ref: "User" },
     approvedBy: { type: Schema.Types.ObjectId, ref: "User" },

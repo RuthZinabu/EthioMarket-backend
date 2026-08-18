@@ -32,7 +32,7 @@ export const CreateVendorSchema = z.object({
   payoutMethod: z.nativeEnum(PayoutMethod).default(PayoutMethod.BANK_TRANSFER).optional(),
   payoutBankDetails: VendorPayoutBankDetailsSchema.optional(),
   businessDetail: VendorBusinessDetailSchema.optional(),
-  enabled: z.boolean().default(false).optional(),
+  enabled: z.boolean().default(true).optional(),
 });
 
 export const UpdateVendorSchema = CreateVendorSchema.partial();
