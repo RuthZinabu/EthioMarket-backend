@@ -14,8 +14,7 @@ const CartItemSchema = new Schema({
 
 const CartSchema = new Schema<CartDocument>(
   {
-    userId: { type: String, sparse: true, index: true },
-    customerId: { type: String, index: true },
+    customerId: { type: String, required: true, index: true },
     items: [CartItemSchema],
     totalPrice: { type: Number, required: true, default: 0 },
     totalQuantity: { type: Number, required: true, default: 0 },

@@ -53,7 +53,7 @@ async function startServer() {
     router(app);
 
     app.use(errorHandler);
-    const PORT = globalThis._CONFIG.PORT || process.env.PORT || 3004;
+    const PORT = globalThis._CONFIG.PORT;
     const ENVIRONMENT = process.env.NODE_ENV || "development";
     app.listen(PORT, () => {
       logger.info(`🛒 Cart Microservice listening on port ${PORT} in ${ENVIRONMENT} mode.`);

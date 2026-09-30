@@ -4,10 +4,13 @@ import cartController from "../controllers/cart.controller";
 const router: Router = Router();
 
 router.get("/health", cartController.healthCheck);
-router.get("/:userId", cartController.getCart);
-router.post("/:userId/items", cartController.addToCart);
-router.patch("/:userId/items/:productId", cartController.updateItemQuantity);
-router.delete("/:userId/items/:productId", cartController.removeItem);
-router.delete("/:userId", cartController.clearCart);
+
+router.post("/:customerId/sync", cartController.syncCart);
+
+router.get("/:customerId", cartController.getCart);
+router.post("/:customerId/items", cartController.addToCart);
+router.patch("/:customerId/items/:productId", cartController.updateItemQuantity);
+router.delete("/:customerId/items/:productId", cartController.removeItem);
+router.delete("/:customerId", cartController.clearCart);
 
 export default router;

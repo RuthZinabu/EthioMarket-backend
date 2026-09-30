@@ -11,8 +11,7 @@ export interface ICartItem {
 }
 
 export interface ICart {
-  userId?: string;
-  customerId?: string | Types.ObjectId;
+  customerId: string;
   items: ICartItem[];
   totalPrice: number;
   totalQuantity: number;

@@ -45,18 +45,17 @@ const mapConfigVals = (vals: ConfigType): Partial<EnvConfig> => {
     process.env.DATABASE_URL = vals.POSTGRES_DB_URL;
   }
   return {
-    MONGO_DB_URL: vals.MONGO_DB_URL || process.env.MONGO_DB_URL || process.env.MONGODB_URI || "mongodb://localhost:27017/emacare",
-    JWT_SECRET_KEY: vals.JWT_SECRET_KEY || process.env.JWT_SECRET_KEY,
-    JWT_EXPIRES_IN: vals.JWT_EXPIRES_IN || process.env.JWT_EXPIRES_IN,
-    JWT_ENCRYPTION_KEY: vals.JWT_ENCRYPTION_KEY || process.env.JWT_ENCRYPTION_KEY,
-    PORT: Number(vals.PRODUCT_SERVICE_PORT || vals.PORT || process.env.PORT || 3002),
-    REDIS_URL: vals.REDIS_URL || process.env.REDIS_URL,
+    MONGO_DB_URL: vals.MONGO_DB_URL,
+    JWT_SECRET_KEY: vals.JWT_SECRET_KEY,
+    JWT_EXPIRES_IN: vals.JWT_EXPIRES_IN,
+    JWT_ENCRYPTION_KEY: vals.JWT_ENCRYPTION_KEY,
+    PORT: Number(vals.PRODUCT_SERVICE_PORT),
+    REDIS_URL: vals.REDIS_URL,
+    SEAWEEDFS_FILER_URL: vals.SEAWEEDFS_FILER_URL,
+    SEAWEEDFS_PUBLIC_URL: vals.SEAWEEDFS_PUBLIC_URL,
+    SEAWEEDFS_FOLDER_NAME: vals.SEAWEEDFS_FOLDER_NAME,
 
-    SEAWEEDFS_FILER_URL: vals.SEAWEEDFS_FILER_URL || process.env.SEAWEEDFS_FILER_URL || "http://localhost:8888",
-    SEAWEEDFS_PUBLIC_URL: vals.SEAWEEDFS_PUBLIC_URL || process.env.SEAWEEDFS_PUBLIC_URL || "http://localhost:8888",
-    SEAWEEDFS_FOLDER_NAME: vals.SEAWEEDFS_FOLDER_NAME || process.env.SEAWEEDFS_FOLDER_NAME || "agent",
-
-    POSTGRES_DB_URL: vals.POSTGRES_DB_URL || process.env.POSTGRES_DB_URL,
+    POSTGRES_DB_URL: vals.POSTGRES_DB_URL,
   };
 };
 

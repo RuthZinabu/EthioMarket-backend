@@ -59,7 +59,7 @@ async function startServer() {
       runSeed();
     }, 2000);
 
-    const PORT = globalThis._CONFIG.PORT || process.env.PORT || 3001;
+    const PORT = globalThis._CONFIG.PORT;
     const ENVIRONMENT = process.env.NODE_ENV || "development";
     app.listen(PORT, () => {
       logger.info(`🔐 Auth Microservice listening on port ${PORT} in ${ENVIRONMENT} mode.`);

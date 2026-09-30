@@ -8,6 +8,7 @@ export const configSchema = z.object({
   JWT_ENCRYPTION_KEY: optionalNonEmptyString,
   JWT_SECRET_KEY: optionalNonEmptyString,
   AUTH_MS_PORT: z.coerce.number().optional(),
+  AUTH_SERVICE_PORT: z.coerce.number().optional(),
   PORT: z.coerce.number().optional(),
   REDIS_URL: optionalNonEmptyString,
 
