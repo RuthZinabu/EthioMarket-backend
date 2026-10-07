@@ -18,7 +18,7 @@ const productUploadFields = upload.fields([
 
 const router = Router();
 
-router.get("/health", productController.healthCheck);
+router.get("/health-check", productController.healthCheck);
 
 router.get("/paginate", productController.getAllProducts);
 
