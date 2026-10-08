@@ -3,22 +3,26 @@ import type { IShipment, ShipmentDocument } from "@emacare/mongo/types";
 import mongoose from "mongoose";
 
 export async function createShipment(data: Partial<IShipment>): Promise<ShipmentDocument | null> {
-  return shipmentRepository.create(data as any);
+  const result = await shipmentRepository.create(data as any);
+  return result as unknown as ShipmentDocument | null;
 }
 
 export async function getShipmentByTrackingNumber(trackingNumber: string): Promise<ShipmentDocument | null> {
-  return shipmentRepository.findOne({ trackingNumber });
+  const result = await shipmentRepository.findOne({ trackingNumber });
+  return result as unknown as ShipmentDocument | null;
 }
 
 export async function getShipmentByOrderId(orderId: string): Promise<ShipmentDocument | null> {
-  return shipmentRepository.findOne({ orderId });
+  const result = await shipmentRepository.findOne({ orderId });
+  return result as unknown as ShipmentDocument | null;
 }
 
 export async function getShipmentById(id: string): Promise<ShipmentDocument | null> {
   const filter = mongoose.Types.ObjectId.isValid(id)
     ? { _id: new mongoose.Types.ObjectId(id) }
     : { trackingNumber: id };
-  return shipmentRepository.findOne(filter);
+  const result = await shipmentRepository.findOne(filter);
+  return result as unknown as ShipmentDocument | null;
 }
 
 export async function updateShipmentStatus(
@@ -38,7 +42,7 @@ export async function updateShipmentStatus(
     description: description || `Status updated to ${status}`,
   });
 
-  return shipmentRepository.findOneAndUpdate(
+  const result = await shipmentRepository.findOneAndUpdate(
     { _id: shipment._id },
     {
       $set: {
@@ -48,6 +52,7 @@ export async function updateShipmentStatus(
       },
     }
   );
+  return result as unknown as ShipmentDocument | null;
 }
 
 export default {
@@ -57,3 +62,4 @@ export default {
   getShipmentById,
   updateShipmentStatus,
 };
+

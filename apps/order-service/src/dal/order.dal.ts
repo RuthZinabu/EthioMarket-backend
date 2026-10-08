@@ -3,24 +3,26 @@ import type { IOrder, OrderDocument } from "@emacare/mongo/types";
 import mongoose from "mongoose";
 
 export async function createOrder(data: Partial<IOrder>): Promise<OrderDocument | null> {
-  return orderRepository.create(data as any);
+  const result = await orderRepository.create(data as any);
+  return result as unknown as OrderDocument | null;
 }
 
 export async function getOrderById(id: string): Promise<OrderDocument | null> {
   const filter = mongoose.Types.ObjectId.isValid(id)
     ? { _id: new mongoose.Types.ObjectId(id) }
     : { _id: id };
-  return orderRepository.findOne(filter);
+  const result = await orderRepository.findOne(filter);
+  return result as unknown as OrderDocument | null;
 }
 
 export async function getOrdersByUserId(userId: string): Promise<OrderDocument[]> {
   const docs = await orderRepository.find({ customerId: userId } as any);
-  return (docs as OrderDocument[]) || [];
+  return (docs as unknown as OrderDocument[]) || [];
 }
 
 export async function getOrdersByVendorId(vendorId: string): Promise<OrderDocument[]> {
   const docs = await orderRepository.find({ "items.vendorId": vendorId });
-  return (docs as OrderDocument[]) || [];
+  return (docs as unknown as OrderDocument[]) || [];
 }
 
 export async function updateOrderStatus(
@@ -38,7 +40,8 @@ export async function updateOrderStatus(
   if (updates.paymentId) updateFields.paymentId = updates.paymentId;
   if (updates.shipmentId) updateFields.shipmentId = updates.shipmentId;
 
-  return orderRepository.findOneAndUpdate(filter, { $set: updateFields });
+  const result = await orderRepository.findOneAndUpdate(filter, { $set: updateFields });
+  return result as unknown as OrderDocument | null;
 }
 
 export default {
@@ -48,3 +51,4 @@ export default {
   getOrdersByVendorId,
   updateOrderStatus,
 };
+
