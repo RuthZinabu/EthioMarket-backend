@@ -52,6 +52,33 @@ export async function seedSuperAdmin() {
       UserRole.Checker,
     );
 
+    // ── Main Super Admin User ───────────────────────────────────────────────────
+    const adminPhone = "+251900000000";
+    const existingAdmin = await userRepository.findOne({ email: "admin@ethio-marketplace.com" });
+    const adminPayload = {
+      userCode: "USR-SUPER-ADMIN",
+      firstName: "Platform",
+      middleName: "System",
+      lastName: "Admin",
+      phoneNumber: adminPhone,
+      email: "admin@ethio-marketplace.com",
+      password: await hashedOtpOrPassword("EthioMarket2026!"),
+      role: UserRole.SuperAdmin,
+      realm: Realm.Institution,
+      organization: institutionId,
+      isSetPassword: true,
+      enabled: true,
+      isDeleted: false,
+    };
+
+    if (!existingAdmin) {
+      await userRepository.create(adminPayload);
+      logger.info("Primary admin user admin@ethio-marketplace.com seeded successfully.");
+    } else {
+      await userRepository.updateOne({ _id: existingAdmin._id }, adminPayload);
+      logger.info("Primary admin user admin@ethio-marketplace.com updated successfully.");
+    }
+
     // ── Maker Admin User ────────────────────────────────────────────────────────
     const makerPhone = "+251900000001";
 

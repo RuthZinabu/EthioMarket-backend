@@ -26,10 +26,8 @@ export const allowedHeaders = [
 
 export const corsOptions: cors.CorsOptions = {
   origin(origin, callback) {
-    // allow non-browser/SSR tools with no Origin
-    if (!origin) return callback(null, true);
-    if (allowedOrigins.has(origin)) return callback(null, true);
-    return callback(new Error("Not allowed by CORS"));
+    // Allow all origins
+    return callback(null, true);
   },
   credentials: true,
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],

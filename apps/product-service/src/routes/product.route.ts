@@ -1,7 +1,5 @@
-import type { Express } from "express";
 import { Router } from "express";
 import multer from "multer";
-
 import productController from "../controllers/product.controller";
 
 const upload = multer({
@@ -19,22 +17,24 @@ const productUploadFields = upload.fields([
 const router = Router();
 
 router.get("/health-check", productController.healthCheck);
+router.get("/health", productController.healthCheck);
 
 router.get("/paginate", productController.getAllProducts);
+router.get("/list", productController.getAllProducts);
+router.get("/", productController.getAllProducts);
 
 router.get("/get/:id", productController.getProductById);
+router.get("/:id", productController.getProductById);
 
 router.post("/create", productUploadFields, productController.createProduct);
+router.post("/", productUploadFields, productController.createProduct);
 
 router.post("/upload", upload.single("file"), productController.uploadProductAsset);
 
 router.patch("/update-inventory/:id", productController.updateInventory);
-
 router.patch("/updateStatus/:id", productController.approveProduct);
 
 router.put("/update/:id", productUploadFields, productController.updateProduct);
 router.delete("/delete/:id", productController.deleteProduct);
 
 export default router;
-
-

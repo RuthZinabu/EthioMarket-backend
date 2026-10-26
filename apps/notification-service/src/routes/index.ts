@@ -4,6 +4,4 @@ import { routePrefix } from '@emacare/shared-utils';
 
 export default function router(app: Express): void {
   app.use(`${routePrefix}/notifications`, notificationRoutes);
-  app.use('/', notificationRoutes);
 }
-export { notificationRoutes };

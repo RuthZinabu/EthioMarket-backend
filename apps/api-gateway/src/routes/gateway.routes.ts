@@ -17,6 +17,7 @@ const router: Router = Router();
 const serviceRoutes = [
   { path: 'auth', target: services.auth },
   { path: 'products', target: services.products },
+  { path: 'vendors', target: services.products },
   { path: 'orders', target: services.orders },
   { path: 'cart', target: services.cart },
   { path: 'payments', target: services.payments },

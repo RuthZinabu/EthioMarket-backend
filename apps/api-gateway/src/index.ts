@@ -49,7 +49,6 @@ async function startServer() {
     app.use(cors(corsOptions));
     app.use(helmet());
     app.disable("x-powered-by");
-    app.use(express.json());
     router(app);
 
     app.use(errorHandler);

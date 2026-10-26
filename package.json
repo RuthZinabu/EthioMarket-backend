@@ -11,6 +11,7 @@
   ],
   "scripts": {
     "dev": "concurrently \"npm run dev -w @emacare/api-gateway\" \"npm run dev -w @emacare/auth-service\" \"npm run dev -w @emacare/product-service\" \"npm run dev -w @emacare/order-service\" \"npm run dev -w @emacare/cart-service\" \"npm run dev -w @emacare/payment-service\" \"npm run dev -w @emacare/shipping-service\" \"npm run dev -w @emacare/notification-service\"",
+    "dev:services": "concurrently \"npm run dev -w @emacare/api-gateway\" \"npm run dev -w @emacare/auth-service\" \"npm run dev -w @emacare/product-service\" \"npm run dev -w @emacare/order-service\" \"npm run dev -w @emacare/cart-service\" \"npm run dev -w @emacare/payment-service\" \"npm run dev -w @emacare/shipping-service\" \"npm run dev -w @emacare/notification-service\"",
     "build": "npm run build -w @emacare/shared-utils && npm run build -w @emacare/mongo && npm run build -w @emacare/prisma && npm run build -w @emacare/api-gateway && npm run build -w @emacare/auth-service && npm run build -w @emacare/product-service && npm run build -w @emacare/order-service && npm run build -w @emacare/cart-service && npm run build -w @emacare/payment-service && npm run build -w @emacare/shipping-service && npm run build -w @emacare/notification-service",
     "test": "echo 'Tests running...'",
     "lint": "echo 'Linting...'",
