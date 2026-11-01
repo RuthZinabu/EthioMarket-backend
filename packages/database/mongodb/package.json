@@ -9,7 +9,7 @@
     "./types": "./dist/types/index.js",
     "./models": "./dist/models/index.js",
     "./repository": "./dist/repository.js",
-    "./*": "./dist/*"
+    "./*": "./dist/*.js"
   },
   "scripts": {
     "build": "tsc",
@@ -20,4 +20,3 @@
     "mongoose-paginate-v2": "^1.9.0"
   }
 }
-
