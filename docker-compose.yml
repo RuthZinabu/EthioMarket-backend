@@ -1,5 +1,5 @@
 services:
-  # MongoDB
+    # MongoDB
   mongodb:
     image: mongo:6
     container_name: emacare-mongodb
@@ -48,18 +48,31 @@ services:
       timeout: 5s
       retries: 20
       start_period: 15s
-
-  # API Gateway
   api-gateway:
-    build:
-      context: .
-      dockerfile: apps/api-gateway/Dockerfile
-    container_name: emacare-api-gateway
+    image: ${AWS_ACCOUNT_ID:-645311222502}.dkr.ecr.${AWS_REGION:-us-east-1}.amazonaws.com/emacare/api-gateway:${IMAGE_TAG:?Set IMAGE_TAG}
+    restart: unless-stopped
+    init: true
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    stop_grace_period: 30s
+    logging: &default-logging
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "5"
     ports:
-      - '3000:3000'
+      - "3000:3000"
     environment:
-      PORT: 3000
-      MONGO_DB_URL: mongodb://admin:password@mongodb:27017/emacare?authSource=admin
+      NODE_ENV: production
+      PORT: "3000"
+      API_GATEWAY_PORT: "3000"
+      MONGO_DB_URL: ${MONGO_DB_URL:?Set MONGO_DB_URL}
+      REDIS_URL: ${REDIS_URL:?Set REDIS_URL}
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY:?Set JWT_SECRET_KEY}
+      JWT_ENCRYPTION_KEY: ${JWT_ENCRYPTION_KEY:?Set JWT_ENCRYPTION_KEY}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-1h}
       AUTH_SERVICE_URL: http://auth-service:3001
       PRODUCT_SERVICE_URL: http://product-service:3002
       ORDER_SERVICE_URL: http://order-service:3003
@@ -67,168 +80,234 @@ services:
       PAYMENT_SERVICE_URL: http://payment-service:3005
       SHIPPING_SERVICE_URL: http://shipping-service:3006
       NOTIFICATION_SERVICE_URL: http://notification-service:3007
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - "const http=require('node:http');http.get('http://127.0.0.1:'+process.env.PORT+'/health',r=>{r.resume();process.exit(r.statusCode===200?0:1)}).on('error',()=>process.exit(1))"
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
     depends_on:
-      - auth-service
-      - product-service
-      - order-service
-      - cart-service
-      - payment-service
-      - shipping-service
-      - notification-service
+      auth-service:
+        condition: service_started
+      product-service:
+        condition: service_started
+      order-service:
+        condition: service_started
+      cart-service:
+        condition: service_started
+      payment-service:
+        condition: service_started
+      shipping-service:
+        condition: service_started
+      notification-service:
+        condition: service_started
     networks:
-      - emacare-network
+      - backend
 
-  # Auth Service
   auth-service:
-    build:
-      context: .
-      dockerfile: apps/auth-service/Dockerfile
-    container_name: emacare-auth-service
-    ports:
-      - '3001:3001'
+    image: ${AWS_ACCOUNT_ID:-645311222502}.dkr.ecr.${AWS_REGION:-us-east-1}.amazonaws.com/emacare/auth-service:${IMAGE_TAG:?Set IMAGE_TAG}
+    restart: unless-stopped
+    init: true
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    stop_grace_period: 30s
+    logging: *default-logging
+    expose:
+      - "3001"
     environment:
-      PORT: 3001
-      AUTH_SERVICE_PORT: 3001
-      MONGO_DB_URL: mongodb://admin:password@mongodb:27017/emacare?authSource=admin
-      JWT_SECRET: ${JWT_SECRET:-emacare-super-secret-jwt-key-change-in-production}
-      MONGODB_URI: mongodb://admin:password@mongodb:27017/emacare
-    depends_on:
-      - mongodb
+      NODE_ENV: production
+      PORT: "3001"
+      AUTH_SERVICE_PORT: "3001"
+      MONGO_DB_URL: ${MONGO_DB_URL:?Set MONGO_DB_URL}
+      REDIS_URL: ${REDIS_URL:?Set REDIS_URL}
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY:?Set JWT_SECRET_KEY}
+      JWT_ENCRYPTION_KEY: ${JWT_ENCRYPTION_KEY:?Set JWT_ENCRYPTION_KEY}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-1h}
     networks:
-      - emacare-network
+      - backend
 
-  # Product Service
   product-service:
-    build:
-      context: .
-      dockerfile: apps/product-service/Dockerfile
-    container_name: emacare-product-service
-    ports:
-      - '3002:3002'
+    image: ${AWS_ACCOUNT_ID:-645311222502}.dkr.ecr.${AWS_REGION:-us-east-1}.amazonaws.com/emacare/product-service:${IMAGE_TAG:?Set IMAGE_TAG}
+    restart: unless-stopped
+    init: true
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    stop_grace_period: 30s
+    logging: *default-logging
+    expose:
+      - "3002"
     environment:
-      PORT: 3002
-      PRODUCT_SERVICE_PORT: 3002
-      MONGO_DB_URL: mongodb://admin:password@mongodb:27017/emacare?authSource=admin
-      MONGODB_URI: mongodb://admin:password@mongodb:27017/emacare
+      NODE_ENV: production
+      PORT: "3002"
+      PRODUCT_SERVICE_PORT: "3002"
+      MONGO_DB_URL: ${MONGO_DB_URL:?Set MONGO_DB_URL}
+      REDIS_URL: ${REDIS_URL:?Set REDIS_URL}
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY:?Set JWT_SECRET_KEY}
+      JWT_ENCRYPTION_KEY: ${JWT_ENCRYPTION_KEY:?Set JWT_ENCRYPTION_KEY}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-1h}
+      SEAWEEDFS_FILER_URL: http://seaweedfs:8888
+      SEAWEEDFS_PUBLIC_URL: ${SEAWEEDFS_PUBLIC_URL:?Set the public HTTPS media URL}
+      SEAWEEDFS_FOLDER_NAME: ${SEAWEEDFS_FOLDER_NAME:-emacare_files}
     depends_on:
-      - mongodb
-      - seaweedfs
+      seaweedfs:
+        condition: service_started
     networks:
-      - emacare-network
+      - backend
 
-  # Order Service
   order-service:
-    build:
-      context: .
-      dockerfile: apps/order-service/Dockerfile
-    container_name: emacare-order-service
-    ports:
-      - '3003:3003'
+    image: ${AWS_ACCOUNT_ID:-645311222502}.dkr.ecr.${AWS_REGION:-us-east-1}.amazonaws.com/emacare/order-service:${IMAGE_TAG:?Set IMAGE_TAG}
+    restart: unless-stopped
+    init: true
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    stop_grace_period: 30s
+    logging: *default-logging
+    expose:
+      - "3003"
     environment:
-      PORT: 3003
-      ORDER_SERVICE_PORT: 3003
-      MONGO_DB_URL: mongodb://admin:password@mongodb:27017/emacare?authSource=admin
-      MONGODB_URI: mongodb://admin:password@mongodb:27017/emacare
-    depends_on:
-      - mongodb
+      NODE_ENV: production
+      PORT: "3003"
+      ORDER_SERVICE_PORT: "3003"
+      MONGO_DB_URL: ${MONGO_DB_URL:?Set MONGO_DB_URL}
+      REDIS_URL: ${REDIS_URL:?Set REDIS_URL}
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY:?Set JWT_SECRET_KEY}
+      JWT_ENCRYPTION_KEY: ${JWT_ENCRYPTION_KEY:?Set JWT_ENCRYPTION_KEY}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-1h}
     networks:
-      - emacare-network
+      - backend
 
-  # Cart Service
   cart-service:
-    build:
-      context: .
-      dockerfile: apps/cart-service/Dockerfile
-    container_name: emacare-cart-service
-    ports:
-      - '3004:3004'
+    image: ${AWS_ACCOUNT_ID:-645311222502}.dkr.ecr.${AWS_REGION:-us-east-1}.amazonaws.com/emacare/cart-service:${IMAGE_TAG:?Set IMAGE_TAG}
+    restart: unless-stopped
+    init: true
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    stop_grace_period: 30s
+    logging: *default-logging
+    expose:
+      - "3004"
     environment:
-      PORT: 3004
-      CART_SERVICE_PORT: 3004
-      MONGO_DB_URL: mongodb://admin:password@mongodb:27017/emacare?authSource=admin
-      REDIS_URL: redis://redis:6379
-    depends_on:
-      - redis
+      NODE_ENV: production
+      PORT: "3004"
+      CART_SERVICE_PORT: "3004"
+      MONGO_DB_URL: ${MONGO_DB_URL:?Set MONGO_DB_URL}
+      REDIS_URL: ${REDIS_URL:?Set REDIS_URL}
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY:?Set JWT_SECRET_KEY}
+      JWT_ENCRYPTION_KEY: ${JWT_ENCRYPTION_KEY:?Set JWT_ENCRYPTION_KEY}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-1h}
     networks:
-      - emacare-network
+      - backend
 
-  # Payment Service
   payment-service:
-    build:
-      context: .
-      dockerfile: apps/payment-service/Dockerfile
-    container_name: emacare-payment-service
-    ports:
-      - '3005:3005'
+    image: ${AWS_ACCOUNT_ID:-645311222502}.dkr.ecr.${AWS_REGION:-us-east-1}.amazonaws.com/emacare/payment-service:${IMAGE_TAG:?Set IMAGE_TAG}
+    restart: unless-stopped
+    init: true
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    stop_grace_period: 30s
+    logging: *default-logging
+    expose:
+      - "3005"
     environment:
-      PORT: 3005
-      PAYMENT_SERVICE_PORT: 3005
-      MONGO_DB_URL: mongodb://admin:password@mongodb:27017/emacare?authSource=admin
-      MONGODB_URI: mongodb://admin:password@mongodb:27017/emacare
-      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY:-sk_test_placeholder}
-    depends_on:
-      - mongodb
+      NODE_ENV: production
+      PORT: "3005"
+      PAYMENT_SERVICE_PORT: "3005"
+      MONGO_DB_URL: ${MONGO_DB_URL:?Set MONGO_DB_URL}
+      REDIS_URL: ${REDIS_URL:?Set REDIS_URL}
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY:?Set JWT_SECRET_KEY}
+      JWT_ENCRYPTION_KEY: ${JWT_ENCRYPTION_KEY:?Set JWT_ENCRYPTION_KEY}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-1h}
+      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY:?Set STRIPE_SECRET_KEY}
     networks:
-      - emacare-network
+      - backend
 
-  # Shipping Service
   shipping-service:
-    build:
-      context: .
-      dockerfile: apps/shipping-service/Dockerfile
-    container_name: emacare-shipping-service
-    ports:
-      - '3006:3006'
+    image: ${AWS_ACCOUNT_ID:-645311222502}.dkr.ecr.${AWS_REGION:-us-east-1}.amazonaws.com/emacare/shipping-service:${IMAGE_TAG:?Set IMAGE_TAG}
+    restart: unless-stopped
+    init: true
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    stop_grace_period: 30s
+    logging: *default-logging
+    expose:
+      - "3006"
     environment:
-      PORT: 3006
-      SHIPPING_SERVICE_PORT: 3006
-      MONGO_DB_URL: mongodb://admin:password@mongodb:27017/emacare?authSource=admin
-      MONGODB_URI: mongodb://admin:password@mongodb:27017/emacare
-      DHL_API_KEY: ${DHL_API_KEY:-dhl_api_key_placeholder}
-    depends_on:
-      - mongodb
+      NODE_ENV: production
+      PORT: "3006"
+      SHIPPING_SERVICE_PORT: "3006"
+      MONGO_DB_URL: ${MONGO_DB_URL:?Set MONGO_DB_URL}
+      REDIS_URL: ${REDIS_URL:?Set REDIS_URL}
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY:?Set JWT_SECRET_KEY}
+      JWT_ENCRYPTION_KEY: ${JWT_ENCRYPTION_KEY:?Set JWT_ENCRYPTION_KEY}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-1h}
+      DHL_API_KEY: ${DHL_API_KEY:?Set DHL_API_KEY}
     networks:
-      - emacare-network
+      - backend
 
-  # Notification Service
   notification-service:
-    build:
-      context: .
-      dockerfile: apps/notification-service/Dockerfile
-    container_name: emacare-notification-service
-    ports:
-      - '3007:3007'
+    image: ${AWS_ACCOUNT_ID:-645311222502}.dkr.ecr.${AWS_REGION:-us-east-1}.amazonaws.com/emacare/notification-service:${IMAGE_TAG:?Set IMAGE_TAG}
+    restart: unless-stopped
+    init: true
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    stop_grace_period: 30s
+    logging: *default-logging
+    expose:
+      - "3007"
     environment:
-      PORT: 3007
-      NOTIFICATION_SERVICE_PORT: 3007
-      MONGO_DB_URL: mongodb://admin:password@mongodb:27017/emacare?authSource=admin
-      EMAIL_USER: ${EMAIL_USER:-email_user_placeholder}
-      EMAIL_PASSWORD: ${EMAIL_PASSWORD:-email_password_placeholder}
-      TWILIO_ACCOUNT_SID: ${TWILIO_ACCOUNT_SID:-twilio_sid_placeholder}
-      TWILIO_AUTH_TOKEN: ${TWILIO_AUTH_TOKEN:-twilio_token_placeholder}
+      NODE_ENV: production
+      PORT: "3007"
+      NOTIFICATION_SERVICE_PORT: "3007"
+      MONGO_DB_URL: ${MONGO_DB_URL:?Set MONGO_DB_URL}
+      REDIS_URL: ${REDIS_URL:?Set REDIS_URL}
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY:?Set JWT_SECRET_KEY}
+      JWT_ENCRYPTION_KEY: ${JWT_ENCRYPTION_KEY:?Set JWT_ENCRYPTION_KEY}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-1h}
+      EMAIL_USER: ${EMAIL_USER:?Set EMAIL_USER}
+      EMAIL_PASSWORD: ${EMAIL_PASSWORD:?Set EMAIL_PASSWORD}
+      TWILIO_ACCOUNT_SID: ${TWILIO_ACCOUNT_SID:?Set TWILIO_ACCOUNT_SID}
+      TWILIO_AUTH_TOKEN: ${TWILIO_AUTH_TOKEN:?Set TWILIO_AUTH_TOKEN}
     networks:
-      - emacare-network
+      - backend
 
-  # SeaweedFS for Distributed Object Storage
   seaweedfs:
-    image: chrislusf/seaweedfs:latest
-    container_name: emacare-seaweedfs
-    command: "server -dir=/data -filer=true"
+    image: ${SEAWEEDFS_IMAGE:?Set SEAWEEDFS_IMAGE to a pinned image version}
+    restart: unless-stopped
+    init: true
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    logging: *default-logging
+    command: ["server", "-dir=/data", "-filer=true"]
     ports:
-      - '8888:8888'
-      - '9333:9333'
-      - '8080:8080'
+      - "8888:8888"
     volumes:
       - seaweedfs_data:/data
     networks:
-      - emacare-network
+      - backend
 
 volumes:
-  mongodb_data:
-  redis_data:
-  vault_data:
   seaweedfs_data:
 
 networks:
-  emacare-network:
+  backend:
     driver: bridge
